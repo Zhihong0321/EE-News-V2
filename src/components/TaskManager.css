@@ -1,0 +1,273 @@
+.task-manager {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.task-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 30px;
+}
+
+.task-header h1 {
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.btn-primary {
+  background: var(--primary-color, #007bff);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.btn-primary:hover {
+  opacity: 0.9;
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.task-form-card {
+  background: var(--card-bg, white);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.task-form-card h2 {
+  margin-top: 0;
+  color: var(--text-primary);
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.form-group input,
+.form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  font-family: inherit;
+}
+
+.form-group textarea {
+  resize: vertical;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+}
+
+.checkbox-label input[type="checkbox"] {
+  width: auto;
+  cursor: pointer;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.tasks-list {
+  display: grid;
+  gap: 16px;
+}
+
+.task-card {
+  background: var(--card-bg, white);
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.task-info h3 {
+  margin: 0 0 8px 0;
+  color: var(--text-primary);
+}
+
+.task-query {
+  color: var(--text-secondary);
+  margin: 0 0 12px 0;
+  font-size: 14px;
+}
+
+.task-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.status {
+  font-weight: 500;
+}
+
+.status.active {
+  color: #28a745;
+}
+
+.status.inactive {
+  color: #6c757d;
+}
+
+.task-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-run, .btn-edit, .btn-delete {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.btn-run {
+  background: #28a745;
+  color: white;
+}
+
+.btn-run:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+}
+
+.btn-edit {
+  background: #ffc107;
+  color: #000;
+}
+
+.btn-delete {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-run:hover:not(:disabled),
+.btn-edit:hover,
+.btn-delete:hover {
+  opacity: 0.9;
+}
+
+.execution-log {
+  margin-top: 30px;
+  background: #1e1e1e;
+  border-radius: 8px;
+  padding: 20px;
+  color: #d4d4d4;
+}
+
+.execution-log h2 {
+  margin-top: 0;
+  color: #fff;
+  font-size: 18px;
+}
+
+.log-content {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  max-height: 500px;
+  overflow-y: auto;
+}
+
+.log-entry {
+  padding: 6px 0;
+  border-bottom: 1px solid #333;
+}
+
+.log-entry:last-child {
+  border-bottom: none;
+}
+
+.log-time {
+  color: #858585;
+  margin-right: 12px;
+}
+
+.log-info .log-message {
+  color: #4fc3f7;
+}
+
+.log-success .log-message {
+  color: #66bb6a;
+}
+
+.log-warning .log-message {
+  color: #ffb74d;
+}
+
+.log-error .log-message {
+  color: #ef5350;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+  font-size: 16px;
+}
+
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+  .task-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .task-actions {
+    margin-top: 16px;
+    width: 100%;
+  }
+  
+  .task-actions button {
+    flex: 1;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
