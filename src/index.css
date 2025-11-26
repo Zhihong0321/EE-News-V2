@@ -27,6 +27,7 @@ a {
   max-width: var(--max-content-width);
   margin: 0 auto;
   padding: 0 16px;
+  text-align: left;
 }
 
 .no-scrollbar::-webkit-scrollbar {
