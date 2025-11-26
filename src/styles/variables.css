@@ -7,6 +7,8 @@
   --accent-color: #2563eb;
   --border-color: #e5e7eb;
   --nav-bg: rgba(255, 255, 255, 0.95);
+  --card-bg: #ffffff;
+  --hover-bg: rgba(0, 0, 0, 0.02);
   --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
   --font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
@@ -15,11 +17,13 @@
 
 [data-theme='dark'] {
   /* Dark Mode */
-  --bg-primary: #000000; /* True black for OLED/Minimalist feel */
-  --bg-secondary: #121212;
-  --text-primary: #e2e2e2;
+  --bg-primary: #000000;
+  --bg-secondary: #1a1a1a;
+  --text-primary: #e5e5e5;
   --text-secondary: #a1a1aa;
   --accent-color: #3b82f6;
   --border-color: #27272a;
   --nav-bg: rgba(0, 0, 0, 0.95);
+  --card-bg: #000000;
+  --hover-bg: rgba(255, 255, 255, 0.05);
 }

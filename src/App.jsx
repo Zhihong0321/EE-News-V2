@@ -17,17 +17,30 @@ function App() {
   const [selectedArticle, setSelectedArticle] = useState(null);
   const [articleLoading, setArticleLoading] = useState(false);
 
-  // Handle routing
+  // Handle routing and browser back button
   useEffect(() => {
-    const path = window.location.pathname;
-    if (path === '/manage-task') {
-      setCurrentPage('tasks');
-    } else if (path === '/news-database') {
-      setCurrentPage('database');
-    } else {
-      setCurrentPage('news');
-    }
-  }, []);
+    const handleRoute = () => {
+      const path = window.location.pathname;
+      const articleMatch = path.match(/^\/article\/(\d+)$/);
+      
+      if (articleMatch) {
+        const articleId = parseInt(articleMatch[1]);
+        setCurrentPage('article');
+        openArticle(articleId);
+      } else if (path === '/manage-task') {
+        setCurrentPage('tasks');
+      } else if (path === '/news-database') {
+        setCurrentPage('database');
+      } else {
+        setCurrentPage('news');
+        setSelectedArticle(null);
+      }
+    };
+
+    handleRoute();
+    window.addEventListener('popstate', handleRoute);
+    return () => window.removeEventListener('popstate', handleRoute);
+  }, [language]);
 
   const navigateTo = (page) => {
     setCurrentPage(page);
@@ -96,7 +109,10 @@ function App() {
     : articles.filter(item => item.tags.includes(activeTag));
 
   const openArticle = async (articleId) => {
+    setCurrentPage('article');
     setArticleLoading(true);
+    window.history.pushState({}, '', `/article/${articleId}`);
+    
     try {
       const response = await fetch(`/api/articles/${articleId}?lang=${language}`);
       const data = await response.json();
@@ -110,8 +126,10 @@ function App() {
     }
   };
 
-  const closeArticle = () => {
+  const goBackToNews = () => {
+    setCurrentPage('news');
     setSelectedArticle(null);
+    window.history.pushState({}, '', '/');
   };
 
   return (
@@ -145,37 +163,50 @@ function App() {
             )}
           </main>
 
-          <BottomBar toggleTheme={toggleTheme} isDark={isDark} navigateTo={navigateTo} />
+          <BottomBar 
+            toggleTheme={toggleTheme} 
+            isDark={isDark} 
+            navigateTo={navigateTo}
+            currentPage={currentPage}
+          />
+        </>
+      )}
 
-          {selectedArticle && (
-            <div className="article-modal" onClick={closeArticle}>
-              <div className="article-modal-content" onClick={(e) => e.stopPropagation()}>
-                <button className="close-button" onClick={closeArticle}>×</button>
-                {articleLoading ? (
-                  <div className="loading">Loading article...</div>
-                ) : (
-                  <>
-                    <h1>{selectedArticle.title}</h1>
-                    <div className="article-meta-full">
-                      <span className="source">{selectedArticle.source}</span>
-                      <span className="date">{new Date(selectedArticle.news_date).toLocaleDateString()}</span>
-                    </div>
-                    <div className="article-tags">
-                      {selectedArticle.tags?.map((tag, idx) => (
-                        <span key={idx} className="tag">{tag}</span>
-                      ))}
-                    </div>
-                    <div className="article-content">
-                      {selectedArticle.content}
-                    </div>
-                    <div className="article-footer">
-                      <small>Original: {selectedArticle.original_headline}</small>
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-          )}
+      {currentPage === 'article' && (
+        <>
+          <div className="article-page">
+            {articleLoading ? (
+              <div className="loading-page">Loading article...</div>
+            ) : selectedArticle ? (
+              <>
+                <h1 className="article-title">{selectedArticle.title}</h1>
+                <div className="article-meta-full">
+                  <span className="source">{selectedArticle.source}</span>
+                  <span className="date">{new Date(selectedArticle.news_date).toLocaleDateString()}</span>
+                </div>
+                <div className="article-tags">
+                  {selectedArticle.tags?.map((tag, idx) => (
+                    <span key={idx} className="tag">{tag}</span>
+                  ))}
+                </div>
+                <div className="article-content">
+                  {selectedArticle.content}
+                </div>
+                <div className="article-footer">
+                  <small>Original: {selectedArticle.original_headline}</small>
+                </div>
+              </>
+            ) : (
+              <div className="loading-page">Article not found</div>
+            )}
+          </div>
+          <BottomBar 
+            toggleTheme={toggleTheme} 
+            isDark={isDark} 
+            navigateTo={navigateTo}
+            currentPage={currentPage}
+            goBack={goBackToNews}
+          />
         </>
       )}
 
