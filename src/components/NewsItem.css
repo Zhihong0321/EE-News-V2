@@ -1,13 +1,18 @@
 .news-item {
-    padding: 16px 0;
+    padding: 24px 0;
     border-bottom: 1px solid var(--border-color);
     animation: fadeIn 0.5s ease;
     cursor: pointer;
     transition: background-color 0.2s;
 }
 
+.news-item:last-child {
+    border-bottom: none;
+}
+
 .news-item:hover {
-    background-color: var(--hover-bg, rgba(0, 0, 0, 0.02));
+    background-color: transparent;
+    /* Cleaner hover, maybe just text color change? Or very subtle bg */
 }
 
 @keyframes fadeIn {
@@ -25,33 +30,43 @@
 .news-meta {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 0.75rem;
+    gap: 8px;
+    font-size: 0.8125rem;
+    /* 13px */
     color: var(--text-secondary);
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    font-weight: 500;
 }
 
 .news-dot {
-    font-weight: bold;
+    opacity: 0.5;
+}
+
+.news-tags {
+    color: var(--accent-color);
 }
 
 .news-title {
-    font-size: 1.125rem;
+    font-size: 1.25rem;
+    /* 20px */
     font-weight: 700;
-    line-height: 1.3;
-    margin-bottom: 8px;
+    line-height: 1.4;
+    margin-bottom: 10px;
     color: var(--text-primary);
+    letter-spacing: -0.01em;
 }
 
 .news-content {
-    font-size: 0.9375rem;
-    line-height: 1.5;
+    font-size: 1rem;
+    /* 16px */
+    line-height: 1.6;
     color: var(--text-secondary);
-    margin-bottom: 12px;
+    margin-bottom: 16px;
 
     /* Clamp text */
     display: -webkit-box;
-    -webkit-line-clamp: 4;
+    -webkit-line-clamp: 3;
+    /* Show less lines for cleaner look */
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -59,8 +74,8 @@
 
 .news-actions {
     display: flex;
-    gap: 24px;
-    margin-top: 8px;
+    gap: 20px;
+    margin-top: 4px;
 }
 
 .action-btn {
@@ -68,15 +83,24 @@
     border: none;
     cursor: pointer;
     color: var(--text-secondary);
-    padding: 4px;
+    padding: 0;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     transition: color 0.2s;
     font-family: inherit;
-    font-size: 0.8rem;
+    font-size: 0.875rem;
+    opacity: 0.8;
 }
 
 .action-btn:hover {
-    color: var(--accent-color);
+    color: var(--text-primary);
+    opacity: 1;
+}
+
+.action-btn svg {
+    width: 18px;
+    height: 18px;
+    stroke-width: 1.5px;
+    /* Thinner stroke */
 }
