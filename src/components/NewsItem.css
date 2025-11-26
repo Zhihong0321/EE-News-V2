@@ -2,6 +2,12 @@
     padding: 16px 0;
     border-bottom: 1px solid var(--border-color);
     animation: fadeIn 0.5s ease;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.news-item:hover {
+    background-color: var(--hover-bg, rgba(0, 0, 0, 0.02));
 }
 
 @keyframes fadeIn {

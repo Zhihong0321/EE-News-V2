@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import './App.css';
 import Header from './components/Header';
 import NewsItem from './components/NewsItem';
 import BottomBar from './components/BottomBar';
@@ -13,6 +14,8 @@ function App() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [articleLoading, setArticleLoading] = useState(false);
 
   // Handle routing
   useEffect(() => {
@@ -92,6 +95,25 @@ function App() {
     ? articles
     : articles.filter(item => item.tags.includes(activeTag));
 
+  const openArticle = async (articleId) => {
+    setArticleLoading(true);
+    try {
+      const response = await fetch(`/api/articles/${articleId}?lang=${language}`);
+      const data = await response.json();
+      if (data.success) {
+        setSelectedArticle(data.article);
+      }
+    } catch (error) {
+      console.error('Error fetching article:', error);
+    } finally {
+      setArticleLoading(false);
+    }
+  };
+
+  const closeArticle = () => {
+    setSelectedArticle(null);
+  };
+
   return (
     <div className="app">
       {currentPage === 'news' && (
@@ -114,7 +136,7 @@ function App() {
               </div>
             ) : filteredNews.length > 0 ? (
               filteredNews.map(news => (
-                <NewsItem key={news.id} news={news} />
+                <NewsItem key={news.id} news={news} onClick={() => openArticle(news.id)} />
               ))
             ) : (
               <div style={{ padding: '40px', textAlign: 'center', color: 'var(--text-secondary)' }}>
@@ -124,6 +146,36 @@ function App() {
           </main>
 
           <BottomBar toggleTheme={toggleTheme} isDark={isDark} navigateTo={navigateTo} />
+
+          {selectedArticle && (
+            <div className="article-modal" onClick={closeArticle}>
+              <div className="article-modal-content" onClick={(e) => e.stopPropagation()}>
+                <button className="close-button" onClick={closeArticle}>×</button>
+                {articleLoading ? (
+                  <div className="loading">Loading article...</div>
+                ) : (
+                  <>
+                    <h1>{selectedArticle.title}</h1>
+                    <div className="article-meta-full">
+                      <span className="source">{selectedArticle.source}</span>
+                      <span className="date">{new Date(selectedArticle.news_date).toLocaleDateString()}</span>
+                    </div>
+                    <div className="article-tags">
+                      {selectedArticle.tags?.map((tag, idx) => (
+                        <span key={idx} className="tag">{tag}</span>
+                      ))}
+                    </div>
+                    <div className="article-content">
+                      {selectedArticle.content}
+                    </div>
+                    <div className="article-footer">
+                      <small>Original: {selectedArticle.original_headline}</small>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
         </>
       )}
 

@@ -1,9 +1,9 @@
 import React from 'react';
 import './NewsItem.css';
 
-const NewsItem = ({ news }) => {
+const NewsItem = ({ news, onClick }) => {
     return (
-        <article className="news-item">
+        <article className="news-item" onClick={onClick}>
             <div className="news-meta">
                 <span className="news-date">{news.date}</span>
                 <span className="news-dot">·</span>
