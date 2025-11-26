@@ -7,6 +7,8 @@ function NewsManager() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({});
+  const [selectedArticle, setSelectedArticle] = useState(null);
+  const [articleLoading, setArticleLoading] = useState(false);
 
   useEffect(() => {
     fetchStats();
@@ -73,6 +75,25 @@ function NewsManager() {
       case 'failed': return '#F44336';
       default: return '#999';
     }
+  };
+
+  const openArticle = async (articleId) => {
+    setArticleLoading(true);
+    try {
+      const response = await fetch(`/api/articles/${articleId}?lang=en`);
+      const data = await response.json();
+      if (data.success) {
+        setSelectedArticle(data.article);
+      }
+    } catch (error) {
+      console.error('Error fetching article:', error);
+    } finally {
+      setArticleLoading(false);
+    }
+  };
+
+  const closeArticle = () => {
+    setSelectedArticle(null);
   };
 
   return (
@@ -157,7 +178,11 @@ function NewsManager() {
               ) : (
                 <div className="articles-grid">
                   {articles.map(article => (
-                    <div key={article.id} className="article-card">
+                    <div 
+                      key={article.id} 
+                      className="article-card"
+                      onClick={() => openArticle(article.id)}
+                    >
                       <h3>{article.title}</h3>
                       <div className="article-meta">
                         <span>Original: {article.original_headline}</span>
@@ -176,6 +201,36 @@ function NewsManager() {
             </div>
           )}
         </>
+      )}
+
+      {selectedArticle && (
+        <div className="article-modal" onClick={closeArticle}>
+          <div className="article-modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="close-button" onClick={closeArticle}>×</button>
+            {articleLoading ? (
+              <div className="loading">Loading article...</div>
+            ) : (
+              <>
+                <h1>{selectedArticle.title}</h1>
+                <div className="article-meta-full">
+                  <span className="source">{selectedArticle.source}</span>
+                  <span className="date">{new Date(selectedArticle.news_date).toLocaleDateString()}</span>
+                </div>
+                <div className="article-tags">
+                  {selectedArticle.tags?.map((tag, idx) => (
+                    <span key={idx} className="tag">{tag}</span>
+                  ))}
+                </div>
+                <div className="article-content">
+                  {selectedArticle.content}
+                </div>
+                <div className="article-footer">
+                  <small>Original: {selectedArticle.original_headline}</small>
+                </div>
+              </>
+            )}
+          </div>
+        </div>
       )}
     </div>
   );
