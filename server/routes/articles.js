@@ -126,3 +126,79 @@ router.get('/:id', async (req, res) => {
 });
 
 export default router;
+
+/**
+ * PUT /api/articles/:id
+ * Update an article
+ */
+router.put('/:id', async (req, res) => {
+    try {
+        const articleId = parseInt(req.params.id);
+        if (isNaN(articleId)) {
+            return res.status(400).json({ success: false, error: 'Invalid article ID' });
+        }
+
+        const { title_en, title_zh, title_ms, content_en, content_zh, content_ms, summary_en, summary_zh, summary_ms, tags } = req.body;
+
+        const result = await query(
+            `UPDATE app_news_articles 
+            SET title_en = COALESCE($1, title_en),
+                title_zh = COALESCE($2, title_zh),
+                title_ms = COALESCE($3, title_ms),
+                content_en = COALESCE($4, content_en),
+                content_zh = COALESCE($5, content_zh),
+                content_ms = COALESCE($6, content_ms),
+                summary_en = COALESCE($7, summary_en),
+                summary_zh = COALESCE($8, summary_zh),
+                summary_ms = COALESCE($9, summary_ms),
+                tags = COALESCE($10, tags)
+            WHERE id = $11
+            RETURNING *`,
+            [title_en, title_zh, title_ms, content_en, content_zh, content_ms, summary_en, summary_zh, summary_ms, tags, articleId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Article not found' });
+        }
+
+        res.json({
+            success: true,
+            article: result.rows[0],
+            message: 'Article updated successfully'
+        });
+    } catch (error) {
+        console.error('Update article error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+/**
+ * DELETE /api/articles/:id
+ * Delete an article
+ */
+router.delete('/:id', async (req, res) => {
+    try {
+        const articleId = parseInt(req.params.id);
+        if (isNaN(articleId)) {
+            return res.status(400).json({ success: false, error: 'Invalid article ID' });
+        }
+
+        const result = await query(
+            'DELETE FROM app_news_articles WHERE id = $1 RETURNING id',
+            [articleId]
+        );
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ success: false, error: 'Article not found' });
+        }
+
+        res.json({
+            success: true,
+            message: 'Article deleted successfully',
+            deletedId: articleId
+        });
+    } catch (error) {
+        console.error('Delete article error:', error);
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
