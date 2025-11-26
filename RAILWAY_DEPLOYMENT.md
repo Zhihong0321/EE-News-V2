@@ -1,5 +1,13 @@
 # Railway Deployment Guide for EE-NewsSearch
 
+## ✅ Pre-Deployment Checklist
+
+- [ ] Railway account created
+- [ ] PostgreSQL database ready (Railway or external)
+- [ ] Database connection string available
+- [ ] Code pushed to GitHub repository
+- [ ] `.env.example` reviewed for required variables
+
 ## Prerequisites
 1. A Railway account ([railway.app](https://railway.app))
 2. An existing PostgreSQL database on Railway (or elsewhere)
@@ -11,8 +19,9 @@
 **IMPORTANT**: This app will create its own tables but will NEVER delete existing data.
 
 The app creates these tables (if they don't exist):
-- `app_news_searches`
-- `app_news_articles`
+- `app_search_tasks` - User-defined search configurations
+- `app_news_headlines` - Raw headlines from searches
+- `app_news_articles` - Processed articles with translations
 
 All table names are prefixed with `app_` to avoid conflicts with your existing data.
 
@@ -52,8 +61,10 @@ https://your-app.up.railway.app
 ```
 
 Visit these endpoints to verify:
-- `https://your-app.up.railway.app/` - Your React frontend
+- `https://your-app.up.railway.app/` - Your React frontend (news feed)
+- `https://your-app.up.railway.app/manage-task` - Task management page
 - `https://your-app.up.railway.app/api/health` - API health check
+- `https://your-app.up.railway.app/api/tasks` - Tasks API
 
 ## Database Safety Features
 
@@ -107,9 +118,25 @@ railway link
 railway up
 ```
 
+## Features Available After Deployment
+
+✅ **News Feed** - View processed articles at `/`
+✅ **Task Manager** - Create and manage search tasks at `/manage-task`
+✅ **Manual Execution** - Run tasks manually with detailed debug logs
+✅ **API Endpoints** - Full REST API for tasks, headlines, and articles
+
+## Environment Variables Required
+
+```
+NODE_ENV=production
+DATABASE_URL=postgresql://user:password@host:port/database
+GEMINI_API_KEY=your_gemini_api_key (optional, for API access)
+```
+
 ## Next Steps
 
 After successful deployment:
-1. Connect your frontend to the Gemini API
-2. Implement news search functionality
-3. Add more API endpoints as needed
+1. Navigate to `/manage-task` to create your first search task
+2. Click "Run Now" to test the task execution
+3. View processed articles on the home page
+4. Set up cron jobs for automated execution (see CRON_SETUP.md)

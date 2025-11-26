@@ -57,4 +57,62 @@ router.post('/process-headlines', async (req, res) => {
     }
 });
 
+/**
+ * POST /api/cron/manual-run
+ * Manual task execution with detailed logging
+ * Body: { taskId: number }
+ */
+router.post('/manual-run', async (req, res) => {
+    try {
+        const { taskId } = req.body;
+        if (!taskId) {
+            return res.status(400).json({ success: false, error: 'taskId is required' });
+        }
+
+        const details = [];
+        
+        // Step 1: Fetch headlines
+        const fetchResult = await fetchHeadlinesForTask(taskId);
+        if (!fetchResult.success) {
+            return res.json({
+                success: false,
+                error: fetchResult.error,
+                details: [{ step: 'fetch', error: fetchResult.error }]
+            });
+        }
+
+        const headlinesFetched = fetchResult.headlines_fetched || 0;
+        
+        // Step 2: Process headlines
+        const processResult = await processNextHeadlines(10, taskId);
+        
+        // Collect detailed results
+        if (processResult.results) {
+            processResult.results.forEach(result => {
+                details.push({
+                    headline: result.headline,
+                    status: result.status,
+                    error: result.error || null
+                });
+            });
+        }
+
+        res.json({
+            success: true,
+            stats: {
+                headlines_fetched: headlinesFetched,
+                articles_processed: processResult.processed || 0
+            },
+            details
+        });
+    } catch (error) {
+        console.error('Manual run error:', error);
+        res.status(500).json({ 
+            success: false, 
+            error: error.message,
+            details: [{ step: 'execution', error: error.message }]
+        });
+    }
+});
+
 export default router;

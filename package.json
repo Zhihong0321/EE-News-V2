@@ -8,7 +8,8 @@
     "start": "node server/server.js",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "verify-deploy": "node verify-deployment.js"
   },
   "dependencies": {
     "cors": "^2.8.5",

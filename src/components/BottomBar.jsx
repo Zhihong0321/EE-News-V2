@@ -1,7 +1,7 @@
 import React from 'react';
 import './BottomBar.css';
 
-const BottomBar = ({ toggleTheme, isDark }) => {
+const BottomBar = ({ toggleTheme, isDark, navigateTo }) => {
     return (
         <nav className="bottom-bar">
             <div className="bottom-bar-container container">
@@ -9,9 +9,9 @@ const BottomBar = ({ toggleTheme, isDark }) => {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
                     <span className="nav-label">Home</span>
                 </button>
-                <button className="nav-item">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                    <span className="nav-label">Search</span>
+                <button className="nav-item" onClick={() => navigateTo('tasks')}>
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"></path><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+                    <span className="nav-label">Tasks</span>
                 </button>
                 <button className="nav-item" onClick={toggleTheme}>
                     {isDark ? (

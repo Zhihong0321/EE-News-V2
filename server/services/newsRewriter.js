@@ -180,24 +180,41 @@ export async function rewriteHeadline(headlineId) {
 /**
  * Process next N fresh headlines
  * @param {number} limit - Number of headlines to process (default: 5)
- * @returns {Promise<{success: boolean, processed: number, failed: number}>}
+ * @param {number} taskId - Optional task ID to filter headlines
+ * @returns {Promise<{success: boolean, processed: number, failed: number, results: Array}>}
  */
-export async function processNextHeadlines(limit = 5) {
+export async function processNextHeadlines(limit = 5, taskId = null) {
     try {
         // Get fresh headlines
-        const headlinesResult = await query(
-            `SELECT id FROM app_news_headlines 
-            WHERE status = 'fresh' 
-            ORDER BY created_at ASC 
-            LIMIT $1`,
-            [limit]
-        );
+        let queryText = `SELECT id, headline FROM app_news_headlines 
+            WHERE status = 'fresh'`;
+        const queryParams = [];
+        
+        if (taskId) {
+            queryText += ` AND task_id = $1`;
+            queryParams.push(taskId);
+            queryText += ` ORDER BY created_at ASC LIMIT $2`;
+            queryParams.push(limit);
+        } else {
+            queryText += ` ORDER BY created_at ASC LIMIT $1`;
+            queryParams.push(limit);
+        }
+
+        const headlinesResult = await query(queryText, queryParams);
 
         let processed = 0;
         let failed = 0;
+        const results = [];
 
         for (const headline of headlinesResult.rows) {
             const result = await rewriteHeadline(headline.id);
+            
+            results.push({
+                headline: headline.headline,
+                status: result.success ? 'completed' : 'failed',
+                error: result.error || null
+            });
+            
             if (result.success) {
                 processed++;
             } else {
@@ -209,10 +226,17 @@ export async function processNextHeadlines(limit = 5) {
             success: true,
             processed,
             failed,
-            total: headlinesResult.rows.length
+            total: headlinesResult.rows.length,
+            results
         };
     } catch (error) {
         console.error('processNextHeadlines error:', error);
-        return { success: false, error: error.message, processed: 0, failed: 0 };
+        return { 
+            success: false, 
+            error: error.message, 
+            processed: 0, 
+            failed: 0,
+            results: []
+        };
     }
 }
