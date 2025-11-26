@@ -3,6 +3,7 @@ import Header from './components/Header';
 import NewsItem from './components/NewsItem';
 import BottomBar from './components/BottomBar';
 import TaskManager from './components/TaskManager';
+import NewsManager from './components/NewsManager';
 
 function App() {
   const [currentPage, setCurrentPage] = useState('news');
@@ -18,6 +19,8 @@ function App() {
     const path = window.location.pathname;
     if (path === '/manage-task') {
       setCurrentPage('tasks');
+    } else if (path === '/news-database') {
+      setCurrentPage('database');
     } else {
       setCurrentPage('news');
     }
@@ -25,7 +28,12 @@ function App() {
 
   const navigateTo = (page) => {
     setCurrentPage(page);
-    window.history.pushState({}, '', page === 'tasks' ? '/manage-task' : '/');
+    const paths = {
+      'tasks': '/manage-task',
+      'database': '/news-database',
+      'news': '/'
+    };
+    window.history.pushState({}, '', paths[page] || '/');
   };
 
   // Initialize theme
@@ -136,6 +144,26 @@ function App() {
             </button>
           </div>
           <TaskManager />
+        </>
+      )}
+
+      {currentPage === 'database' && (
+        <>
+          <div style={{ padding: '20px', borderBottom: '1px solid #eee' }}>
+            <button 
+              onClick={() => navigateTo('news')}
+              style={{ 
+                background: 'none', 
+                border: 'none', 
+                color: 'var(--primary-color)', 
+                cursor: 'pointer',
+                fontSize: '14px'
+              }}
+            >
+              ← Back to News
+            </button>
+          </div>
+          <NewsManager />
         </>
       )}
     </div>

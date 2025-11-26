@@ -114,9 +114,11 @@ function TaskManager() {
     setRunningTask(task.id);
     setExecutionLog([]);
     addLog(`Starting manual execution for task: ${task.name}`, 'info');
+    addLog(`Query: "${task.query}"`, 'info');
 
     try {
-      addLog(`Step 1: Fetching headlines for query: "${task.query}"`, 'info');
+      // Step 1: Fetch headlines
+      addLog(`\nStep 1: Fetching headlines...`, 'info');
       
       const response = await fetch('/api/cron/manual-run', {
         method: 'POST',
@@ -126,23 +128,48 @@ function TaskManager() {
       
       const data = await response.json();
       
-      if (data.success) {
-        addLog(`✓ Execution completed successfully`, 'success');
-        addLog(`Headlines fetched: ${data.stats?.headlines_fetched || 0}`, 'success');
-        addLog(`Articles processed: ${data.stats?.articles_processed || 0}`, 'success');
-        
-        if (data.details) {
-          addLog(`\nDetailed Results:`, 'info');
-          data.details.forEach((detail, idx) => {
-            addLog(`  ${idx + 1}. ${detail.headline}`, detail.status === 'completed' ? 'success' : 'warning');
-            if (detail.error) {
-              addLog(`     Error: ${detail.error}`, 'error');
-            }
-          });
-        }
-      } else {
+      if (!data.success) {
         addLog(`✗ Execution failed: ${data.error}`, 'error');
+        return;
       }
+      
+      // Show fetch results
+      const fetched = data.stats?.headlines_fetched || 0;
+      if (fetched > 0) {
+        addLog(`✓ Fetched ${fetched} headlines`, 'success');
+      } else {
+        addLog(`⚠ No new headlines found`, 'warning');
+      }
+      
+      // Step 2: Process headlines
+      const processed = data.stats?.articles_processed || 0;
+      if (processed > 0) {
+        addLog(`\nStep 2: Processing headlines through rewriter...`, 'info');
+        addLog(`✓ Processed ${processed} articles`, 'success');
+      } else {
+        addLog(`\nStep 2: No headlines to process`, 'warning');
+        addLog(`Reason: Either no fresh headlines or rewriter failed`, 'warning');
+      }
+      
+      // Show detailed results
+      if (data.details && data.details.length > 0) {
+        addLog(`\nDetailed Results:`, 'info');
+        data.details.forEach((detail, idx) => {
+          const status = detail.status === 'completed' ? 'success' : 'error';
+          addLog(`${idx + 1}. ${detail.headline}`, status);
+          if (detail.error) {
+            addLog(`   Error: ${detail.error}`, 'error');
+          }
+        });
+      }
+      
+      // Final summary
+      addLog(`\n${'='.repeat(50)}`, 'info');
+      addLog(`Summary:`, 'info');
+      addLog(`  Headlines fetched: ${fetched}`, 'info');
+      addLog(`  Articles created: ${processed}`, 'info');
+      addLog(`  Check "Database" tab to view results`, 'info');
+      
     } catch (error) {
       addLog(`✗ Fatal error: ${error.message}`, 'error');
     } finally {
