@@ -43,8 +43,12 @@ function TaskManager() {
     try {
       const response = await fetch('/api/gems');
       const data = await response.json();
+      console.log('GEMS API response:', data);
       if (data.success && data.gems) {
+        console.log('Available GEMS:', data.gems);
         setAvailableGems(data.gems);
+      } else {
+        console.warn('No GEMS found or API error:', data);
       }
     } catch (error) {
       console.error('Error fetching GEMS:', error);
@@ -209,6 +213,9 @@ function TaskManager() {
                 disabled={loadingGems}
               >
                 <option value="">-- Select a GEMS (or use default) --</option>
+                {availableGems.length === 0 && !loadingGems && (
+                  <option disabled>No GEMS available</option>
+                )}
                 {availableGems.map((gem, idx) => (
                   <option key={idx} value={gem.url}>
                     {gem.name} {gem.description ? `- ${gem.description}` : ''}

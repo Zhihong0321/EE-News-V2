@@ -75,12 +75,22 @@ app.get('/api/gems', async (req, res) => {
         const gems = await listGems();
         
         // Format GEMS for dropdown display
-        const formattedGems = gems.map(gem => ({
-            name: gem.name || gem.id || 'Unnamed GEMS',
-            url: gem.gem_id ? `https://gemini.google.com/gem/${gem.gem_id}` : '',
-            description: gem.desc || '',
-            id: gem.id
-        })).filter(gem => gem.url); // Only include GEMS with valid URLs
+        const formattedGems = gems.map(gem => {
+            // The API returns 'id' as the full URL, not gem_id
+            let url = gem.id || '';
+            
+            // If gem_id exists and is not empty, construct URL from it
+            if (gem.gem_id && gem.gem_id.trim()) {
+                url = `https://gemini.google.com/gem/${gem.gem_id}`;
+            }
+            
+            return {
+                name: gem.name || 'Unnamed GEMS',
+                url: url,
+                description: gem.desc || '',
+                raw_id: gem.id
+            };
+        }).filter(gem => gem.url); // Only include GEMS with valid URLs
         
         res.json({ success: true, gems: formattedGems });
     } catch (error) {
