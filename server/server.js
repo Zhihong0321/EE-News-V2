@@ -73,10 +73,19 @@ app.get('/api/health', async (req, res) => {
 app.get('/api/gems', async (req, res) => {
     try {
         const gems = await listGems();
-        res.json({ success: true, gems });
+        
+        // Format GEMS for dropdown display
+        const formattedGems = gems.map(gem => ({
+            name: gem.name || gem.id || 'Unnamed GEMS',
+            url: gem.gem_id ? `https://gemini.google.com/gem/${gem.gem_id}` : '',
+            description: gem.desc || '',
+            id: gem.id
+        })).filter(gem => gem.url); // Only include GEMS with valid URLs
+        
+        res.json({ success: true, gems: formattedGems });
     } catch (error) {
         console.error('List GEMS error:', error);
-        res.status(500).json({ success: false, error: error.message });
+        res.status(500).json({ success: false, error: error.message, gems: [] });
     }
 });
 

@@ -8,6 +8,8 @@ function TaskManager() {
   const [editingTask, setEditingTask] = useState(null);
   const [runningTask, setRunningTask] = useState(null);
   const [executionLog, setExecutionLog] = useState([]);
+  const [availableGems, setAvailableGems] = useState([]);
+  const [loadingGems, setLoadingGems] = useState(false);
   
   const [formData, setFormData] = useState({
     name: '',
@@ -19,6 +21,7 @@ function TaskManager() {
 
   useEffect(() => {
     fetchTasks();
+    fetchAvailableGems();
   }, []);
 
   const fetchTasks = async () => {
@@ -32,6 +35,21 @@ function TaskManager() {
       console.error('Error fetching tasks:', error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchAvailableGems = async () => {
+    setLoadingGems(true);
+    try {
+      const response = await fetch('/api/gems');
+      const data = await response.json();
+      if (data.success && data.gems) {
+        setAvailableGems(data.gems);
+      }
+    } catch (error) {
+      console.error('Error fetching GEMS:', error);
+    } finally {
+      setLoadingGems(false);
     }
   };
 
@@ -181,13 +199,27 @@ function TaskManager() {
             </div>
             
             <div className="form-group">
-              <label>GEMS URL (optional)</label>
-              <input
-                type="text"
+              <label>
+                GEMS Selection
+                {loadingGems && <span style={{ marginLeft: '8px', fontSize: '12px', color: '#999' }}>Loading...</span>}
+              </label>
+              <select
                 value={formData.gems_url}
                 onChange={(e) => setFormData({...formData, gems_url: e.target.value})}
-                placeholder="Leave empty to use default"
-              />
+                disabled={loadingGems}
+              >
+                <option value="">-- Select a GEMS (or use default) --</option>
+                {availableGems.map((gem, idx) => (
+                  <option key={idx} value={gem.url}>
+                    {gem.name} {gem.description ? `- ${gem.description}` : ''}
+                  </option>
+                ))}
+              </select>
+              {formData.gems_url && (
+                <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
+                  Selected: {formData.gems_url}
+                </div>
+              )}
             </div>
             
             <div className="form-row">
