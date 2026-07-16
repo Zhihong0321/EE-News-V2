@@ -1,0 +1,20 @@
+{
+  "name": "local-news-fetcher",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test",
+    "fetch:thestar": "node src/fetcher.js thestar",
+    "fetch:sinchew": "node src/fetcher.js sinchew",
+    "fetch:chinapress": "node src/fetcher.js chinapress",
+    "fetch:theedge": "node src/fetcher.js theedge",
+    "fetch:utusan": "node src/fetcher.js utusan"
+  },
+  "dependencies": {
+    "@mozilla/readability": "^0.6.0",
+    "jsdom": "^29.1.1",
+    "playwright": "^1.55.0",
+    "rss-parser": "^3.13.0"
+  }
+}
