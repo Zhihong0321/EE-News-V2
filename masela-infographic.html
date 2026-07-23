@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Masela: The $20.9B Bet Behind Prabowo's Funding Plea</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;0,9..144,900;1,9..144,500&family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Noto+Serif+SC:wght@600;700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --paper:#faf6ef;
+  --paper-2:#f3ecdf;
+  --ink:#211c14;
+  --ink-2:#584f40;
+  --ink-3:#8a8071;
+  --line:#e2d9c8;
+  --card:#fffdf8;
+  --accent:#b8500f;
+  --accent-2:#e2921c;
+  --accent-deep:#7c3506;
+  --accent-ink:#9c430c;
+  --grad-hero:linear-gradient(135deg,#7c3506 0%,#b8500f 45%,#e2921c 100%);
+  --grad-rule:linear-gradient(90deg,#b8500f,#e2921c 60%,transparent);
+  --grad-wash:radial-gradient(120% 60% at 50% 0%,rgba(226,146,28,.13),rgba(184,80,15,.05) 45%,transparent 75%);
+  --shadow:0 1px 2px rgba(60,40,10,.05),0 8px 28px -12px rgba(60,40,10,.14);
+  --serif:"Fraunces",georgia,serif;
+  --sans:"Instrument Sans","Helvetica Neue",arial,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,monospace;
+  --serif-cn:"Noto Serif SC","Fraunces",serif;
+  --sans-cn:"Noto Sans SC","Instrument Sans",sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root{
+    --paper:#171310;
+    --paper-2:#1f1a15;
+    --ink:#f0e8db;
+    --ink-2:#bfb3a0;
+    --ink-3:#8b8071;
+    --line:#332b21;
+    --card:#1e1915;
+    --accent:#e8933a;
+    --accent-2:#f2b95e;
+    --accent-deep:#f6cd85;
+    --accent-ink:#eda04b;
+    --grad-hero:linear-gradient(135deg,#f6cd85 0%,#e8933a 50%,#c05b16 100%);
+    --grad-rule:linear-gradient(90deg,#e8933a,#f2b95e 60%,transparent);
+    --grad-wash:radial-gradient(120% 60% at 50% 0%,rgba(232,147,58,.10),rgba(192,91,22,.04) 45%,transparent 75%);
+    --shadow:0 1px 2px rgba(0,0,0,.4),0 10px 30px -12px rgba(0,0,0,.5);
+  }
+}
+/* ============ BASE ============ */
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  background:var(--paper);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:17px;line-height:1.6;
+  overflow-x:hidden;
+}
+main{max-width:440px;margin:0 auto;padding:0 22px 40px}
+a{color:var(--accent-ink)}
+::selection{background:var(--accent-2);color:#211c14}
+
+/* language switching */
+[data-lang="en"] .cn{display:none!important}
+[data-lang="cn"] .en{display:none!important}
+[data-lang="cn"] body,[data-lang="cn"] main{font-family:var(--sans-cn)}
+[data-lang="cn"]{--dir:315deg}
+[data-lang="cn"] p,[data-lang="cn"] li{line-height:1.85;font-size:17.5px;letter-spacing:0}
+
+/* CN gets its own gradient direction */
+[data-lang="cn"] :is(.hero-title,.ci-text,.kt-text){
+  background:linear-gradient(315deg,#e2921c 0%,#b8500f 55%,#7c3506 100%);
+  -webkit-background-clip:text;background-clip:text;
+}
+@media (prefers-color-scheme:dark){
+  [data-lang="cn"] :is(.hero-title,.ci-text,.kt-text){
+    background:linear-gradient(315deg,#c05b16 0%,#e8933a 50%,#f6cd85 100%);
+    -webkit-background-clip:text;background-clip:text;
+  }
+}
+
+/* ============ PROGRESS BAR ============ */
+#progress{
+  position:fixed;top:0;left:0;height:3px;width:0%;
+  background:var(--grad-hero);z-index:60;
+  transition:width .08s linear;
+}
+
+/* ============ LANG TOGGLE ============ */
+#langToggle{
+  position:fixed;top:12px;right:12px;z-index:50;
+  display:flex;border:1px solid var(--line);border-radius:999px;
+  background:var(--card);box-shadow:var(--shadow);overflow:hidden;
+}
+#langToggle button{
+  font-family:var(--sans);font-size:12.5px;font-weight:600;
+  letter-spacing:.06em;padding:7px 13px;border:0;background:none;
+  color:var(--ink-3);cursor:pointer;
+}
+#langToggle button.on{background:var(--grad-hero);color:#fff7ec}
+@media (prefers-color-scheme:dark){#langToggle button.on{color:#241505}}
+
+/* ============ HERO ============ */
+header.hero{
+  position:relative;
+  padding:84px 22px 44px;
+  background:var(--grad-wash);
+  text-align:left;
+}
+.hero-inner{max-width:440px;margin:0 auto}
+.kicker{
+  font-family:var(--mono);font-size:11.5px;font-weight:600;
+  letter-spacing:.22em;text-transform:uppercase;color:var(--accent-ink);
+  display:flex;align-items:center;gap:10px;margin-bottom:22px;
+}
+.kicker::before{content:"";width:26px;height:2px;background:var(--grad-rule)}
+.hero-title{
+  font-family:var(--serif);
+  font-optical-sizing:auto;
+  font-size:clamp(40px,11vw,50px);
+  font-weight:900;line-height:1.02;
+  letter-spacing:-.015em;
+  background:var(--grad-hero);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  margin-bottom:8px;
+}
+[data-lang="cn"] .hero-title{
+  font-family:var(--serif-cn);
+  font-size:clamp(34px,9.5vw,42px);
+  line-height:1.18;letter-spacing:.01em;
+}
+.hero-attrib{
+  font-family:var(--serif);font-style:italic;font-weight:500;
+  font-size:19px;color:var(--ink-2);margin:14px 0 26px;
+}
+[data-lang="cn"] .hero-attrib{font-family:var(--serif-cn);font-style:normal;font-weight:600}
+.hero-meta{
+  display:flex;flex-wrap:wrap;gap:6px 16px;
+  font-family:var(--mono);font-size:12px;color:var(--ink-3);
+  border-top:1px solid var(--line);padding-top:14px;
+}
+.hero-meta strong{color:var(--ink-2);font-weight:600}
+
+/* ============ SECTION SCAFFOLD ============ */
+section{margin-top:52px}
+.sec-label{
+  font-family:var(--mono);font-size:11px;font-weight:600;
+  letter-spacing:.24em;text-transform:uppercase;color:var(--ink-3);
+  display:flex;align-items:center;gap:10px;margin-bottom:16px;
+}
+.sec-label::after{content:"";flex:1;height:1px;background:var(--line)}
+.sec-label .num{color:var(--accent-ink)}
+h2.sec-title{
+  font-family:var(--serif);font-weight:700;font-size:26px;
+  line-height:1.2;letter-spacing:-.01em;margin-bottom:14px;
+}
+[data-lang="cn"] h2.sec-title{font-family:var(--serif-cn);font-size:24px;line-height:1.35;letter-spacing:.01em}
+p.lede{font-size:17.5px;color:var(--ink-2)}
+
+/* summary + key facts */
+.summary{font-size:18px;line-height:1.65;color:var(--ink)}
+[data-lang="cn"] .summary{line-height:1.9}
+.facts{list-style:none;margin-top:22px}
+.facts li{
+  position:relative;padding:0 0 16px 26px;
+  font-size:16px;color:var(--ink-2);
+}
+.facts li::before{
+  content:"";position:absolute;left:4px;top:9px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--grad-hero);
+}
+.facts li:not(:last-child)::after{
+  content:"";position:absolute;left:7px;top:22px;bottom:2px;
+  width:1px;background:var(--line);
+}
+
+/* ============ CENTRAL INSIGHT ============ */
+.central{
+  margin-top:56px;padding:30px 0 34px;
+  border-top:3px solid var(--ink);
+  border-bottom:1px solid var(--line);
+}
+.ci-mark{
+  font-family:var(--serif);font-size:56px;line-height:.6;
+  color:var(--accent-2);display:block;margin-bottom:8px;font-weight:900;
+}
+.ci-text{
+  font-family:var(--serif);font-weight:600;
+  font-size:23px;line-height:1.35;letter-spacing:-.005em;
+  background:var(--grad-hero);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+[data-lang="cn"] .ci-text{font-family:var(--serif-cn);font-size:21px;line-height:1.6;letter-spacing:.01em}
+
+/* ============ DIMENSION CARDS ============ */
+.dim{
+  background:var(--card);border:1px solid var(--line);
+  border-radius:16px;box-shadow:var(--shadow);
+  padding:24px 20px 22px;margin-top:26px;
+  position:relative;overflow:hidden;
+}
+.dim::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--grad-rule);
+}
+.dim-head{display:flex;align-items:baseline;gap:12px;margin-bottom:6px}
+.dim-num{
+  font-family:var(--serif);font-weight:900;font-size:30px;
+  line-height:1;color:var(--accent-2);
+  font-feature-settings:"tnum";
+}
+.dim-rel{
+  font-family:var(--mono);font-size:10.5px;font-weight:600;
+  letter-spacing:.18em;text-transform:uppercase;
+  color:var(--accent-ink);
+  border:1px solid var(--line);border-radius:999px;
+  padding:3px 10px;
+}
+h3.dim-title{
+  font-family:var(--serif);font-weight:700;font-size:21.5px;
+  line-height:1.22;letter-spacing:-.01em;margin:10px 0 10px;
+}
+[data-lang="cn"] h3.dim-title{font-family:var(--serif-cn);font-size:20px;line-height:1.4;letter-spacing:.01em}
+.dim-insight{font-size:16.5px;color:var(--ink-2);margin-bottom:6px}
+
+/* metrics */
+.metrics{margin-top:16px;display:grid;gap:12px}
+.stat{
+  background:var(--paper-2);border-radius:12px;padding:16px 16px 15px;
+}
+.stat-label{
+  font-family:var(--sans);font-size:12.5px;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);
+  margin-bottom:6px;
+}
+[data-lang="cn"] .stat-label{font-family:var(--sans-cn);letter-spacing:.12em}
+.stat-value{
+  font-family:var(--mono);font-weight:600;
+  font-size:34px;line-height:1;color:var(--ink);
+  font-feature-settings:"tnum";
+  display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;
+}
+.stat-value .unit{
+  font-family:var(--sans);font-size:13.5px;font-weight:600;
+  color:var(--accent-ink);letter-spacing:.02em;
+}
+[data-lang="cn"] .stat-value .unit{font-family:var(--sans-cn)}
+.stat-period{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);margin-top:7px}
+/* comparison bars */
+.cmp{margin-top:12px;display:grid;gap:8px}
+.cmp-row{display:grid;grid-template-columns:1fr;gap:3px}
+.cmp-label{
+  display:flex;justify-content:space-between;gap:10px;
+  font-size:12.5px;color:var(--ink-2);
+}
+.cmp-label b{font-family:var(--mono);font-weight:600;color:var(--ink);font-feature-settings:"tnum"}
+.cmp-bar{height:9px;border-radius:5px;background:var(--line);overflow:hidden}
+.cmp-bar i{display:block;height:100%;border-radius:5px;background:var(--grad-hero)}
+.cmp-bar.alt i{background:var(--ink-3)}
+/* equivalence chip */
+.equiv{
+  margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  font-family:var(--mono);font-weight:600;font-size:16px;
+  font-feature-settings:"tnum";
+}
+.equiv .pill{
+  background:var(--paper);border:1px solid var(--line);
+  border-radius:9px;padding:8px 12px;line-height:1.3;
+}
+.equiv .pill small{display:block;font-family:var(--sans);font-weight:500;font-size:10.5px;color:var(--ink-3);letter-spacing:.05em;margin-top:2px}
+[data-lang="cn"] .equiv .pill small{font-family:var(--sans-cn)}
+.equiv .approx{font-size:20px;color:var(--accent-ink)}
+/* supporting facts inside card */
+.sup{margin-top:16px;border-top:1px dashed var(--line);padding-top:13px}
+.sup li{
+  list-style:none;position:relative;
+  padding:0 0 9px 18px;font-size:14.5px;color:var(--ink-2);
+}
+.sup li::before{
+  content:"";position:absolute;left:2px;top:9px;
+  width:6px;height:2px;background:var(--accent-2);
+}
+
+/* ============ TIMELINE ============ */
+.tl{list-style:none;margin-top:6px;position:relative}
+.tl::before{
+  content:"";position:absolute;left:7px;top:8px;bottom:8px;width:2px;
+  background:linear-gradient(180deg,var(--accent-2),var(--accent),var(--line));
+}
+.tl li{position:relative;padding:0 0 26px 34px}
+.tl li:last-child{padding-bottom:4px}
+.tl li::before{
+  content:"";position:absolute;left:1px;top:5px;
+  width:14px;height:14px;border-radius:50%;
+  background:var(--paper);border:3px solid var(--accent);
+}
+.tl li:last-child::before{background:var(--grad-hero);border-color:var(--accent-deep)}
+.tl-date{
+  font-family:var(--mono);font-weight:600;font-size:13px;
+  color:var(--accent-ink);letter-spacing:.06em;
+  display:block;margin-bottom:3px;font-feature-settings:"tnum";
+}
+.tl-event{font-size:15.5px;color:var(--ink-2)}
+
+/* ============ KEY TAKEAWAY ============ */
+.takeaway{
+  margin-top:60px;padding:34px 24px 36px;
+  background:var(--paper-2);
+  border-radius:18px;position:relative;overflow:hidden;text-align:left;
+}
+.takeaway::before{
+  content:"";position:absolute;inset:0;
+  background:var(--grad-wash);pointer-events:none;
+}
+.kt-text{
+  position:relative;
+  font-family:var(--serif);font-weight:700;
+  font-size:24px;line-height:1.3;letter-spacing:-.01em;
+  background:var(--grad-hero);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+[data-lang="cn"] .kt-text{font-family:var(--serif-cn);font-size:22px;line-height:1.55;letter-spacing:.01em}
+
+/* ============ WATCH / UNCERTAIN ============ */
+.watch{list-style:none;counter-reset:w}
+.watch li{
+  counter-increment:w;position:relative;
+  padding:0 0 18px 44px;font-size:15.5px;color:var(--ink-2);
+}
+.watch li::before{
+  content:counter(w,decimal-leading-zero);
+  position:absolute;left:0;top:1px;
+  font-family:var(--mono);font-weight:600;font-size:15px;
+  color:var(--accent-ink);
+}
+.watch li::after{
+  content:"";position:absolute;left:0;top:24px;width:26px;height:1px;
+  background:var(--grad-rule);
+}
+.unc{list-style:none}
+.unc li{
+  position:relative;padding:0 0 15px 24px;
+  font-size:15px;color:var(--ink-2);
+}
+.unc li::before{
+  content:"";position:absolute;left:2px;top:8px;
+  width:8px;height:8px;
+  border:2px solid var(--ink-3);transform:rotate(45deg);
+}
+
+/* ============ SOURCES ============ */
+.src{list-style:none;counter-reset:s;border-top:1px solid var(--line)}
+.src li{
+  counter-increment:s;position:relative;
+  padding:12px 0 12px 32px;border-bottom:1px solid var(--line);
+  font-size:13.5px;line-height:1.45;color:var(--ink-2);
+}
+.src li::before{
+  content:counter(s);
+  position:absolute;left:0;top:13px;
+  font-family:var(--mono);font-weight:600;font-size:12px;color:var(--accent-ink);
+}
+.src a{
+  color:var(--ink);font-weight:600;text-decoration:none;
+  border-bottom:1px solid var(--accent-2);
+}
+.src a:hover{color:var(--accent-ink)}
+.src small{display:block;font-family:var(--mono);font-size:11px;color:var(--ink-3);margin-top:3px}
+
+/* ============ FOOTER ============ */
+footer{
+  margin-top:56px;padding:26px 22px 44px;
+  border-top:1px solid var(--line);
+  text-align:center;
+  font-family:var(--mono);font-size:11.5px;line-height:1.9;color:var(--ink-3);
+}
+footer b{color:var(--ink-2);font-weight:600}
+</style>
+</head>
+<body>
+<div id="progress" aria-hidden="true"></div>
+
+<nav id="langToggle" aria-label="Language">
+  <button id="btnEN" class="on" onclick="setLang('en')">EN</button>
+  <button id="btnCN" onclick="setLang('cn')">中文</button>
+</nav>
+
+<!-- ================= HERO ================= -->
+<header class="hero">
+  <div class="hero-inner">
+    <p class="kicker">
+      <span class="en">Enriched Analysis&nbsp;&middot;&nbsp;Indonesia</span>
+      <span class="cn">深度解析&nbsp;&middot;&nbsp;印度尼西亚</span>
+    </p>
+    <h1 class="hero-title">
+      <span class="en">&ldquo;We Need Money&rdquo; &mdash; and a $20.9&#8202;B Gas Bet</span>
+      <span class="cn">&ldquo;我们需要钱&rdquo;&mdash;&mdash;与一场209亿美元的天然气押注</span>
+    </h1>
+    <p class="hero-attrib">
+      <span class="en">Prabowo ties health care, schools and teachers&rsquo; pay to the Abadi Masela LNG project &mdash; whose revenue is still years away.</span>
+      <span class="cn">普拉博沃将医疗、学校与教师工资寄望于阿巴迪马塞拉LNG项目&mdash;&mdash;但其收入仍需数年才能到来。</span>
+    </p>
+    <div class="hero-meta">
+      <span><strong>Kompas.com</strong></span>
+      <span class="en">16 Jul 2026&nbsp;&middot;&nbsp;Tanimbar Islands, Maluku</span>
+      <span class="cn">2026年7月16日&nbsp;&middot;&nbsp;马鲁古&middot;塔宁巴尔群岛</span>
+    </div>
+  </div>
+</header>
+
+<main>
+
+<!-- ================= SUMMARY ================= -->
+<section aria-labelledby="s-story">
+  <p class="sec-label" id="s-story"><span class="num">01</span>
+    <span class="en">The Story</span><span class="cn">新闻事实</span>
+  </p>
+  <p class="summary">
+    <span class="en">President Prabowo Subianto said Indonesia needs funding for health care, schools, teachers&rsquo; salaries, civil-servant pay and infrastructure. Speaking at the inauguration of the Abadi Masela LNG project in the Tanimbar Islands on 16 July 2026, he argued the gas project&rsquo;s investment can help finance development and underscored the need for energy downstreaming.</span>
+    <span class="cn">普拉博沃&middot;苏比延多总统表示，印尼需要资金用于医疗服务、学校、教师工资、公务员薪酬和基础设施。2026年7月16日，他在塔宁巴尔群岛出席阿巴迪马塞拉LNG项目开工仪式时表示，该天然气项目的投资有助于为国家发展提供资金，并强调了能源下游化的必要性。</span>
+  </p>
+  <ul class="facts">
+    <li>
+      <span class="en">Prabowo said the state&rsquo;s funding needs span health care, schools, teachers&rsquo; salaries, civil-servant pay and modern infrastructure.</span>
+      <span class="cn">普拉博沃称，国家资金需求涵盖医疗服务、学校、教师工资、公务员薪酬和现代化基础设施。</span>
+    </li>
+    <li>
+      <span class="en">The remarks came at the groundbreaking of the Abadi Masela LNG project in Tanimbar, Maluku, on 16 July 2026.</span>
+      <span class="cn">这一表态发表于2026年7月16日马鲁古塔宁巴尔阿巴迪马塞拉LNG项目的开工仪式上。</span>
+    </li>
+    <li>
+      <span class="en">According to Prabowo, the project&rsquo;s investment reaches US$20.9 billion, and its gas, condensate and related products will help Indonesia&rsquo;s development.</span>
+      <span class="cn">据普拉博沃介绍，项目投资达209亿美元，其天然气、凝析油及相关产品将助力印尼的发展。</span>
+    </li>
+    <li>
+      <span class="en">Prabowo framed downstreaming as a necessity that depends on energy availability.</span>
+      <span class="cn">普拉博沃将下游化定位为一项依赖能源供应保障的必需战略。</span>
+    </li>
+  </ul>
+</section>
+
+<!-- ================= CENTRAL INSIGHT ================= -->
+<section class="central" aria-label="Central insight">
+  <span class="ci-mark" aria-hidden="true">&para;</span>
+  <p class="ci-text">
+    <span class="en">The government casts Masela as a US$20.9&#8202;billion energy project meant to strengthen supply and development revenue &mdash; yet its fiscal and commercial payoff remains a medium-term projection, with production targeted for 2029&ndash;2030.</span>
+    <span class="cn">政府将马塞拉定位为一项价值209亿美元的能源项目，期望其巩固能源供应并充实发展收入&mdash;&mdash;然而其财政与商业回报仍属中期预测，投产目标定于2029至2030年。</span>
+  </p>
+</section>
+
+<!-- ================= DIMENSIONS ================= -->
+<section aria-labelledby="s-dims">
+  <p class="sec-label" id="s-dims"><span class="num">02</span>
+    <span class="en">Seven Dimensions</span><span class="cn">七个维度</span>
+  </p>
+
+  <!-- DIM 1 -->
+  <article class="dim">
+    <div class="dim-head">
+      <span class="dim-num">1</span>
+      <span class="dim-rel"><span class="en">Comparison</span><span class="cn">对比</span></span>
+    </div>
+    <h3 class="dim-title">
+      <span class="en">Project Scale vs the Development-Funding Claim</span>
+      <span class="cn">项目规模 vs 发展资金叙事</span>
+    </h3>
+    <p class="dim-insight">
+      <span class="en">Masela&rsquo;s investment equals roughly Rp339 trillion at the government&rsquo;s assumed rate of Rp16,900 per US dollar. That figure measures the project&rsquo;s capital scale &mdash; not state revenue already available to spend on health or education.</span>
+      <span class="cn">按政府假设汇率（1美元兑16,900印尼盾）计算，马塞拉的投资额约合339万亿印尼盾。这一数字体现的是项目的资本规模，而非已可用于医疗或教育支出的确定国家收入。</span>
+    </p>
+    <div class="metrics">
+      <div class="stat">
+        <p class="stat-label"><span class="en">Project investment</span><span class="cn">项目投资额</span></p>
+        <p class="stat-value">20.9 <span class="unit"><span class="en">billion USD</span><span class="cn">亿美元 &times;10</span></span></p>
+        <div class="equiv" aria-label="currency equivalence">
+          <span class="pill">USD&nbsp;20.9&#8202;B<small><span class="en">project status, 16 Jul 2026</span><span class="cn">项目状态，2026年7月16日</span></small></span>
+          <span class="approx" aria-hidden="true">&asymp;</span>
+          <span class="pill">Rp&nbsp;339&#8202;T<small><span class="en">ESDM estimate, 25 Jun 2026 &middot; Rp16,900/USD</span><span class="cn">能矿部估算，2026年6月25日 &middot; 16,900盾/美元</span></small></span>
+        </div>
+      </div>
+    </div>
+    <ul class="sup">
+      <li><span class="en">The government values the Abadi Masela LNG national strategic project at US$20.9 billion.</span><span class="cn">政府称阿巴迪马塞拉LNG国家战略项目价值209亿美元。</span></li>
+      <li><span class="en">ESDM earlier converted the roughly US$20 billion investment to Rp339 trillion at an assumed Rp16,900 per USD.</span><span class="cn">能矿部此前按1美元兑16,900印尼盾的假设，将约200亿美元投资折算为339万亿印尼盾。</span></li>
+      <li><span class="en">The 16 July 2026 release describes the project&rsquo;s fiscal revenue as a projection, publishing no revenue figures or payment schedule.</span><span class="cn">2026年7月16日的官方通稿将项目财政收入称为预测，未公布任何收入数字或缴款时间表。</span></li>
+    </ul>
+  </article>
+
+  <!-- DIM 2 -->
+  <article class="dim">
+    <div class="dim-head">
+      <span class="dim-num">2</span>
+      <span class="dim-rel"><span class="en">Historical context</span><span class="cn">历史脉络</span></span>
+    </div>
+    <h3 class="dim-title">
+      <span class="en">From Discovery to Groundbreaking</span>
+      <span class="cn">从发现储量到正式动工</span>
+    </h3>
+    <p class="dim-insight">
+      <span class="en">The 16 July 2026 groundbreaking closes more than two decades of waiting since the field&rsquo;s discovery in 2000 &mdash; but construction and commercialization still lie ahead before the project earns operating revenue.</span>
+      <span class="cn">2026年7月16日的动工仪式，为2000年发现储量以来二十余年的等待画上句号；但在产生经营收入之前，项目仍需经历建设与商业化阶段。</span>
+    </p>
+    <div class="metrics">
+      <div class="stat">
+        <p class="stat-label"><span class="en">Discovery to groundbreaking</span><span class="cn">从发现到动工的跨度</span></p>
+        <p class="stat-value">26 <span class="unit"><span class="en">years</span><span class="cn">年</span></span></p>
+        <p class="stat-period"><span class="en">2000 &rarr; 16 Jul 2026</span><span class="cn">2000年 &rarr; 2026年7月16日</span></p>
+      </div>
+    </div>
+    <ul class="sup">
+      <li><span class="en">ESDM says the Abadi field&rsquo;s reserves were discovered in 2000 and physical construction officially began on 16 July 2026.</span><span class="cn">能矿部称阿巴迪气田储量于2000年发现，项目实体建设于2026年7月16日正式启动。</span></li>
+      <li><span class="en">INPEX received approval for the revised Plan of Development on 5 December 2023, after adding a carbon capture and storage component.</span><span class="cn">INPEX在纳入碳捕集与封存（CCS）方案后，于2023年12月5日获得修订版开发计划（POD）批准。</span></li>
+      <li><span class="en">The FEED phase officially began on 28 August 2025.</span><span class="cn">前端工程设计（FEED）阶段于2025年8月28日正式启动。</span></li>
+    </ul>
+  </article>
+
+  <!-- DIM 3 -->
+  <article class="dim">
+    <div class="dim-head">
+      <span class="dim-num">3</span>
+      <span class="dim-rel"><span class="en">Consequence</span><span class="cn">影响推演</span></span>
+    </div>
+    <h3 class="dim-title">
+      <span class="en">The Energy Capacity Being Targeted</span>
+      <span class="cn">规划中的能源产能</span>
+    </h3>
+    <p class="dim-insight">
+      <span class="en">If it runs to plan, Masela is slated to supply LNG, pipeline gas and condensate. That capacity supports the energy-security and downstreaming narrative &mdash; but as of July 2026 it is a target, not actual production.</span>
+      <span class="cn">若按计划运行，马塞拉将供应液化天然气、管道天然气和凝析油。这一产能支撑着能源安全与下游化叙事&mdash;&mdash;但截至2026年7月，它仍是目标而非实际产量。</span>
+    </p>
+    <div class="metrics">
+      <div class="stat">
+        <p class="stat-label"><span class="en">LNG production target</span><span class="cn">LNG产量目标</span></p>
+        <p class="stat-value">9.5 <span class="unit"><span class="en">million t / year</span><span class="cn">百万吨/年</span></span></p>
+        <p class="stat-period"><span class="en">Target at operation</span><span class="cn">投产后目标</span></p>
+        <div class="cmp">
+          <div class="cmp-row">
+            <p class="cmp-label"><span><span class="en">Share of Japan&rsquo;s annual LNG imports</span><span class="cn">占日本年度LNG进口量比例</span></span><b>&gt;10%</b></p>
+            <div class="cmp-bar"><i style="width:10%"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="stat">
+        <p class="stat-label"><span class="en">Pipeline gas target</span><span class="cn">管道天然气目标</span></p>
+        <p class="stat-value">150 <span class="unit">MMSCFD</span></p>
+        <p class="stat-period"><span class="en">Target at operation</span><span class="cn">投产后目标</span></p>
+      </div>
+      <div class="stat">
+        <p class="stat-label"><span class="en">Condensate production target</span><span class="cn">凝析油产量目标</span></p>
+        <p class="stat-value">35,000 <span class="unit"><span class="en">barrels / day</span><span class="cn">桶/日</span></span></p>
+        <p class="stat-period"><span class="en">Target at operation</span><span class="cn">投产后目标</span></p>
+      </div>
+    </div>
+    <ul class="sup">
+      <li><span class="en">ESDM targets 9.5 million tonnes of LNG per year, 150 MMSCFD of pipeline gas and about 35,000 barrels of condensate per day.</span><span class="cn">能矿部的目标为年产950万吨LNG、1.5亿标准立方英尺/日管道天然气，以及约每日3.5万桶凝析油。</span></li>
+      <li><span class="en">INPEX says the 9.5&#8202;Mt/yr LNG capacity equals more than 10 percent of Japan&rsquo;s annual LNG imports.</span><span class="cn">INPEX称950万吨/年的LNG产能相当于日本年度LNG进口量的10%以上。</span></li>
+      <li><span class="en">The core report quotes Prabowo saying the project will yield more than 9 million tonnes of gas, condensate and related products.</span><span class="cn">核心报道援引普拉博沃的话称，项目将产出900多万吨天然气、凝析油及相关产品。</span></li>
+    </ul>
+  </article>
+
+  <!-- DIM 4 -->
+  <article class="dim">
+    <div class="dim-head">
+      <span class="dim-num">4</span>
+      <span class="dim-rel"><span class="en">Stakeholder impact</span><span class="cn">利益相关方</span></span>
+    </div>
+    <h3 class="dim-title">
+      <span class="en">What It Means for Local Jobs</span>
+      <span class="cn">对本地就业意味着什么</span>
+    </h3>
+    <p class="dim-insight">
+      <span class="en">The government links the project to job opportunities in Maluku and the Tanimbar Islands. The employment figures are estimates or policy commitments &mdash; not headcounts realized as of 16 July 2026.</span>
+      <span class="cn">政府将该项目与马鲁古及塔宁巴尔群岛的就业机会挂钩。相关就业数字是估算或政策承诺，而非截至2026年7月16日的实际用工人数。</span>
+    </p>
+    <div class="metrics">
+      <div class="stat">
+        <p class="stat-label"><span class="en">Estimated workforce by phase</span><span class="cn">分阶段用工估算</span></p>
+        <p class="stat-value">12,611 <span class="unit"><span class="en">workers</span><span class="cn">人</span></span></p>
+        <p class="stat-period"><span class="en">Development phase &middot; projection announced 28 Aug 2025</span><span class="cn">开发阶段 &middot; 2025年8月28日公布的预测</span></p>
+        <div class="cmp">
+          <div class="cmp-row">
+            <p class="cmp-label"><span><span class="en">Development phase</span><span class="cn">开发阶段</span></span><b>12,611</b></p>
+            <div class="cmp-bar"><i style="width:100%"></i></div>
+          </div>
+          <div class="cmp-row">
+            <p class="cmp-label"><span><span class="en">Operations phase</span><span class="cn">运营阶段</span></span><b>850</b></p>
+            <div class="cmp-bar alt"><i style="width:6.7%"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="stat">
+        <p class="stat-label"><span class="en">Local hiring priority</span><span class="cn">本地用工优先比例</span></p>
+        <p class="stat-value">30 <span class="unit"><span class="en">percent</span><span class="cn">%</span></span></p>
+        <p class="stat-period"><span class="en">Government commitment announced 16 Jul 2026</span><span class="cn">政府承诺，2026年7月16日宣布</span></p>
+        <div class="cmp">
+          <div class="cmp-row">
+            <div class="cmp-bar"><i style="width:30%"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="sup">
+      <li><span class="en">ESDM estimates about 12,611 workers in the development phase and about 850 in the operations phase.</span><span class="cn">能矿部估计开发阶段约需12,611名工人，运营阶段约需850名。</span></li>
+      <li><span class="en">On 16 July 2026 the energy minister said 30 percent of the workforce will be prioritized from local communities in Maluku and the Tanimbar Islands regency.</span><span class="cn">2026年7月16日，能矿部长表示将优先安排30%的用工来自马鲁古及塔宁巴尔群岛县的本地社区。</span></li>
+      <li><span class="en">ESDM says the project is expected to spur investment, regional economic activity and job creation.</span><span class="cn">能矿部称，项目有望带动投资、地方经济活动和就业创造。</span></li>
+    </ul>
+  </article>
+
+  <!-- DIM 5 -->
+  <article class="dim">
+    <div class="dim-head">
+      <span class="dim-num">5</span>
+      <span class="dim-rel"><span class="en">Contradiction</span><span class="cn">矛盾之处</span></span>
+    </div>
+    <h3 class="dim-title">
+      <span class="en">The Fiscal Payoff Is Not Immediate</span>
+      <span class="cn">财政效益并非立竿见影</span>
+    </h3>
+    <p class="dim-insight">
+      <span class="en">The statement about public-funding needs came as the project began &mdash; yet the government itself targets construction for 2027 and production for 2029&ndash;2030. The project cannot be treated as an immediate cash source for public services in 2026.</span>
+      <span class="cn">关于公共资金需求的表态发表于项目启动之时，但政府自身将建设期定于2027年、投产期定于2029至2030年。因此在2026年，该项目还不能被视为公共服务支出的直接现金来源。</span>
+    </p>
+    <div class="metrics">
+      <div class="stat">
+        <p class="stat-label"><span class="en">Production start target</span><span class="cn">投产目标</span></p>
+        <p class="stat-value">2029<span class="unit">&ndash;2030</span></p>
+        <p class="stat-period"><span class="en">Government target as of 25 Jun 2026 &middot; 2030 is the range&rsquo;s upper bound</span><span class="cn">政府目标（截至2026年6月25日）&middot; 2030年为目标区间上限</span></p>
+      </div>
+    </div>
+    <ul class="sup">
+      <li><span class="en">On 25 June 2026, ESDM targeted the construction stage to begin in 2027.</span><span class="cn">2026年6月25日，能矿部将建设阶段的启动时间定为2027年。</span></li>
+      <li><span class="en">ESDM targets the project to begin production in 2029&ndash;2030.</span><span class="cn">能矿部目标为项目于2029至2030年开始投产。</span></li>
+      <li><span class="en">The 16 July 2026 release calls the project&rsquo;s economic and fiscal benefits a projection for central and regional governments.</span><span class="cn">2026年7月16日的通稿称，项目对中央和地方政府的经济与财政效益均为预测。</span></li>
+    </ul>
+  </article>
+
+  <!-- DIM 6 -->
+  <article class="dim">
+    <div class="dim-head">
+      <span class="dim-num">6</span>
+      <span class="dim-rel"><span class="en">Future signal</span><span class="cn">前瞻信号</span></span>
+    </div>
+    <h3 class="dim-title">
+      <span class="en">Asian LNG Prices: Opportunity and Risk</span>
+      <span class="cn">亚洲LNG价格：机遇与风险</span>
+    </h3>
+    <p class="dim-insight">
+      <span class="en">Asia&rsquo;s LNG market is highly exposed to supply disruptions and geopolitics. High prices can strengthen the commercial value of exports, but volatility also makes the project&rsquo;s revenue projections less certain.</span>
+      <span class="cn">亚洲LNG市场深受供应中断与地缘政治影响。高价可以提升出口的商业价值，但价格波动也使项目的收入预测更加不确定。</span>
+    </p>
+    <div class="metrics">
+      <div class="stat">
+        <p class="stat-label"><span class="en">Asian LNG price peak</span><span class="cn">亚洲LNG价格峰值</span></p>
+        <p class="stat-value">20.8 <span class="unit">USD / MMBtu</span></p>
+        <p class="stat-period"><span class="en">March 2026 &middot; up 80.6% since Aug 2025</span><span class="cn">2026年3月 &middot; 较2025年8月上涨80.6%</span></p>
+        <div class="cmp">
+          <div class="cmp-row">
+            <p class="cmp-label"><span><span class="en">Aug 2025 (indexed)</span><span class="cn">2025年8月（指数化）</span></span><b>100</b></p>
+            <div class="cmp-bar alt"><i style="width:55.4%"></i></div>
+          </div>
+          <div class="cmp-row">
+            <p class="cmp-label"><span><span class="en">Mar 2026 peak</span><span class="cn">2026年3月峰值</span></span><b>180.6</b></p>
+            <div class="cmp-bar"><i style="width:100%"></i></div>
+          </div>
+        </div>
+      </div>
+      <div class="stat">
+        <p class="stat-label"><span class="en">Indonesia GDP growth projection</span><span class="cn">印尼经济增长预测</span></p>
+        <p class="stat-value">5.1 <span class="unit"><span class="en">percent &middot; 2026</span><span class="cn">% &middot; 2026年</span></span></p>
+        <div class="cmp">
+          <div class="cmp-row">
+            <p class="cmp-label"><span><span class="en">2025</span><span class="cn">2025年</span></span><b>5.0%</b></p>
+            <div class="cmp-bar alt"><i style="width:98%"></i></div>
+          </div>
+          <div class="cmp-row">
+            <p class="cmp-label"><span><span class="en">2026 (proj.)</span><span class="cn">2026年（预测）</span></span><b>5.1%</b></p>
+            <div class="cmp-bar"><i style="width:100%"></i></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <ul class="sup">
+      <li><span class="en">The IMF recorded Asian LNG peaking at US$20.8 per MMBtu in March 2026, up 80.6 percent since August 2025.</span><span class="cn">IMF记录显示，亚洲LNG价格于2026年3月达到每百万英热单位20.8美元的峰值，较2025年8月上涨80.6%。</span></li>
+      <li><span class="en">The IMF judges commodity-price uncertainty to remain very high, with risks tilted to the upside while energy disruptions persist.</span><span class="cn">IMF评估认为大宗商品价格的不确定性依然很高，在能源供应中断持续期间，风险偏向上行。</span></li>
+      <li><span class="en">The IMF projects Indonesian growth of 5.1 percent in 2026, while stressing external risks and the importance of preserving fiscal policy space.</span><span class="cn">IMF预测印尼2026年经济增长5.1%，同时强调外部风险以及维护财政政策空间的重要性。</span></li>
+    </ul>
+  </article>
+
+  <!-- DIM 7 -->
+  <article class="dim">
+    <div class="dim-head">
+      <span class="dim-num">7</span>
+      <span class="dim-rel"><span class="en">Cause</span><span class="cn">因果关系</span></span>
+    </div>
+    <h3 class="dim-title">
+      <span class="en">Gas and the Energy Transition</span>
+      <span class="cn">天然气与能源转型</span>
+    </h3>
+    <p class="dim-insight">
+      <span class="en">Carbon capture and storage is built into Masela&rsquo;s development plan as part of the project design. It can reduce CO&#8322; separated from the reservoir &mdash; but it does not by itself prove the entire LNG value chain is emissions-free.</span>
+      <span class="cn">碳捕集与封存（CCS）作为项目设计的一部分被纳入马塞拉的开发方案。它能减少从气藏中分离出的二氧化碳排放，但并不能由此证明整条LNG价值链是零排放的。</span>
+    </p>
+    <ul class="sup">
+      <li><span class="en">The revised Plan of Development approved on 5 December 2023 incorporates carbon capture and storage into the project.</span><span class="cn">2023年12月5日获批的修订版开发计划将碳捕集与封存纳入项目。</span></li>
+      <li><span class="en">INPEX says the project&rsquo;s CCS-related costs qualify for cost recovery under Indonesia&rsquo;s production sharing contract scheme.</span><span class="cn">INPEX表示，该项目的CCS相关成本符合印尼产品分成合同（PSC）机制下的成本回收条件。</span></li>
+      <li><span class="en">ESDM says CCS is applied to support the project&rsquo;s environmental standards and Indonesia&rsquo;s net-zero emissions target.</span><span class="cn">能矿部称，应用CCS旨在支撑项目的环保标准以及印尼的净零排放目标。</span></li>
+    </ul>
+  </article>
+</section>
+
+<!-- ================= TIMELINE ================= -->
+<section aria-labelledby="s-tl">
+  <p class="sec-label" id="s-tl"><span class="num">03</span>
+    <span class="en">Timeline</span><span class="cn">时间线</span>
+  </p>
+  <h2 class="sec-title">
+    <span class="en">A Quarter-Century in the Making</span>
+    <span class="cn">四分之一个世纪的酝酿</span>
+  </h2>
+  <ol class="tl">
+    <li>
+      <span class="tl-date">2000</span>
+      <span class="tl-event"><span class="en">Gas reserves discovered at the Abadi field.</span><span class="cn">阿巴迪气田发现天然气储量。</span></span>
+    </li>
+    <li>
+      <span class="tl-date">2023-04-04</span>
+      <span class="tl-event"><span class="en">INPEX and partners submit a revised Plan of Development incorporating a CCS component.</span><span class="cn">INPEX及合作伙伴提交纳入CCS方案的修订版开发计划。</span></span>
+    </li>
+    <li>
+      <span class="tl-date">2023-12-05</span>
+      <span class="tl-event"><span class="en">The Indonesian government approves the revised Plan of Development for the Abadi LNG project.</span><span class="cn">印尼政府批准阿巴迪LNG项目的修订版开发计划。</span></span>
+    </li>
+    <li>
+      <span class="tl-date">2025-08-28</span>
+      <span class="tl-event"><span class="en">The FEED phase of Abadi Masela LNG officially begins.</span><span class="cn">阿巴迪马塞拉LNG的前端工程设计（FEED）阶段正式启动。</span></span>
+    </li>
+    <li>
+      <span class="tl-date">2026-06-25</span>
+      <span class="tl-event"><span class="en">ESDM targets construction for 2027 and production for 2029&ndash;2030.</span><span class="cn">能矿部将建设期定为2027年、投产期定为2029至2030年。</span></span>
+    </li>
+    <li>
+      <span class="tl-date">2026-07-16</span>
+      <span class="tl-event"><span class="en">President Prabowo Subianto witnesses the groundbreaking of the Abadi Masela LNG project in the Tanimbar Islands.</span><span class="cn">普拉博沃&middot;苏比延多总统在塔宁巴尔群岛见证阿巴迪马塞拉LNG项目动工。</span></span>
+    </li>
+  </ol>
+</section>
+
+<!-- ================= KEY TAKEAWAY ================= -->
+<section class="takeaway" aria-label="Key takeaway">
+  <p class="kt-text">
+    <span class="en">Masela is a long-term energy and investment bet: it can broaden Indonesia&rsquo;s gas production base, jobs and state revenue &mdash; but it provides no immediate fiscal income for public services in 2026.</span>
+    <span class="cn">马塞拉是一场长期的能源与投资押注：它可以扩大印尼的天然气生产基础、就业和国家收入&mdash;&mdash;但无法为2026年的公共服务需求提供直接财政收入。</span>
+  </p>
+</section>
+
+<!-- ================= WHAT TO WATCH ================= -->
+<section aria-labelledby="s-watch">
+  <p class="sec-label" id="s-watch"><span class="num">04</span>
+    <span class="en">What to Watch</span><span class="cn">后续关注</span>
+  </p>
+  <ol class="watch">
+    <li><span class="en">Certainty of the 2027 construction schedule and the final investment decision ahead of the 2029&ndash;2030 production target.</span><span class="cn">2027年建设时间表的确定性，以及2029&ndash;2030年投产目标前的最终投资决定。</span></li>
+    <li><span class="en">Official detail on the domestic gas share, sales contracts and the mechanism for state revenue.</span><span class="cn">关于国内天然气配额、销售合同和国家收入机制的官方细则。</span></li>
+    <li><span class="en">Delivery of the 30-percent local hiring priority and involvement of local businesses in Maluku and the Tanimbar Islands.</span><span class="cn">30%本地用工优先承诺的落实，以及马鲁古和塔宁巴尔群岛本地企业的参与情况。</span></li>
+    <li><span class="en">Asian LNG price developments and the geopolitical conditions shaping the commercial value of exports.</span><span class="cn">亚洲LNG价格走势及影响出口商业价值的地缘政治形势。</span></li>
+    <li><span class="en">Implementation, financing and environmental oversight of CCS through the construction and operations phases.</span><span class="cn">建设与运营阶段中CCS的实施、融资及环境监管情况。</span></li>
+  </ol>
+</section>
+
+<!-- ================= UNCERTAINTIES ================= -->
+<section aria-labelledby="s-unc">
+  <p class="sec-label" id="s-unc"><span class="num">05</span>
+    <span class="en">Uncertainties</span><span class="cn">不确定因素</span>
+  </p>
+  <ul class="unc">
+    <li><span class="en">No figures for state revenue, profit-sharing, or the project&rsquo;s direct contribution to health, education or teachers&rsquo;-salary budgets had been published in the sources reviewed as of 16 July 2026.</span><span class="cn">截至2026年7月16日，所审阅的信息来源中未公布任何关于国家收入、利益分成，或项目对医疗、教育及教师工资预算直接贡献的数字。</span></li>
+    <li><span class="en">The 2029&ndash;2030 production target is a government target, not an operation date that has been realized.</span><span class="cn">2029&ndash;2030年的投产目标是政府目标，而非已实现的运营日期。</span></li>
+    <li><span class="en">Workforce estimates and the local-hiring priority are not the same as workers actually recruited.</span><span class="cn">用工需求估算及本地用工优先承诺，并不等同于已实际招聘的工人数量。</span></li>
+    <li><span class="en">Future economic value will hinge on LNG prices, project costs, sales contracts, financing and schedule discipline.</span><span class="cn">未来的经济价值将取决于LNG价格、项目成本、销售合同、融资以及项目进度的把控。</span></li>
+  </ul>
+</section>
+
+<!-- ================= SOURCES ================= -->
+<section aria-labelledby="s-src">
+  <p class="sec-label" id="s-src"><span class="num">06</span>
+    <span class="en">Sources</span><span class="cn">信息来源</span>
+  </p>
+  <ol class="src">
+    <li>
+      <a href="https://nasional.kompas.com/read/2026/07/16/16311631/prabowo-kita-butuh-uang-untuk-pelayanan-kesehatan-gaji-guru-hingga-sekolah?source=headline" target="_blank" rel="noopener noreferrer">Prabowo: Kita Butuh Uang untuk Pelayanan Kesehatan, Gaji Guru, hingga Sekolah</a>
+      <small>Kompas.com &middot; 2026-07-16</small>
+    </li>
+    <li>
+      <a href="https://esdm.go.id/id/media-center/arsip-berita/pembangunan-lng-abadi-masela-mulai-jalan-pemerintah-dorong-pertumbuhan-ekonomi-lokal-" target="_blank" rel="noopener noreferrer">Pembangunan LNG Abadi Masela Mulai Jalan, Pemerintah Dorong Pertumbuhan Ekonomi Lokal</a>
+      <small><span class="en">Ministry of Energy and Mineral Resources (ESDM), Republic of Indonesia &middot; 2026-07-16</span><span class="cn">印尼能源与矿产资源部（ESDM）&middot; 2026-07-16</span></small>
+    </li>
+    <li>
+      <a href="https://www.esdm.go.id/en/media-center/news-archives/menteri-bahlil-percepat-proyek-masela-konstruksi-dimulai-pada-2027" target="_blank" rel="noopener noreferrer">Menteri Bahlil Percepat Proyek Masela, Konstruksi Dimulai pada 2027</a>
+      <small><span class="en">Ministry of Energy and Mineral Resources (ESDM), Republic of Indonesia &middot; 2026-06-25</span><span class="cn">印尼能源与矿产资源部（ESDM）&middot; 2026-06-25</span></small>
+    </li>
+    <li>
+      <a href="https://www.esdm.go.id/en/media-center/news-archives/fase-feed-lng-abadi-blok-masela-dimulai-targetkan-produksi-95-juta-ton-lng-per-tahun" target="_blank" rel="noopener noreferrer">Fase FEED LNG Abadi Blok Masela Dimulai, Targetkan Produksi 9,5 Juta Ton LNG per Tahun</a>
+      <small><span class="en">Ministry of Energy and Mineral Resources (ESDM), Republic of Indonesia &middot; 2025-08-28</span><span class="cn">印尼能源与矿产资源部（ESDM）&middot; 2025-08-28</span></small>
+    </li>
+    <li>
+      <a href="https://www.inpex.co.jp/english/news/assets/pdf/20231205.pdf" target="_blank" rel="noopener noreferrer">INPEX Receives Approval for Revised Plan of Development for Abadi LNG Project, Masela Block, Indonesia</a>
+      <small>INPEX Corporation &middot; 2023-12-05</small>
+    </li>
+    <li>
+      <a href="https://www.imf.org/-/media/files/publications/weo/2026/april/english/text.pdf" target="_blank" rel="noopener noreferrer">World Economic Outlook, April 2026: Global Economy in the Shadow of War</a>
+      <small>International Monetary Fund &middot; 2026-04-14</small>
+    </li>
+    <li>
+      <a href="https://www.imf.org/en/news/articles/2026/01/21/pr-26010-indnonesia-imf-executive-board-concludes-2025-article-iv-consultation" target="_blank" rel="noopener noreferrer">IMF Executive Board Concludes 2025 Article IV Consultation with Indonesia</a>
+      <small>International Monetary Fund &middot; 2026-01-21</small>
+    </li>
+  </ol>
+</section>
+
+</main>
+
+<footer>
+  <b>Kompas.com</b> &middot; 2026-07-16T09:31&#8202;UTC<br>
+  <span class="en">Enriched analysis &mdash; sources listed above</span>
+  <span class="cn">深度增补分析 &mdash;&mdash; 信息来源见上文</span>
+</footer>
+
+<script>
+(function(){
+  var root=document.documentElement,
+      bEN=document.getElementById('btnEN'),
+      bCN=document.getElementById('btnCN');
+  window.setLang=function(l){
+    root.setAttribute('data-lang',l);
+    root.setAttribute('lang', l==='cn' ? 'zh-Hans' : 'en');
+    bEN.classList.toggle('on', l==='en');
+    bCN.classList.toggle('on', l==='cn');
+  };
+  var bar=document.getElementById('progress');
+  function onScroll(){
+    var h=document.documentElement.scrollHeight-window.innerHeight;
+    bar.style.width=(h>0 ? (window.scrollY/h*100) : 0)+'%';
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+</body>
+</html>

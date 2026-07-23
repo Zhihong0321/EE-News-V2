@@ -31,7 +31,29 @@ export async function fetchText(url, { accept = '*/*' } = {}) {
       }
       chunks.push(chunk);
     }
-    return Buffer.concat(chunks).toString('utf8');
+    const buffer = Buffer.concat(chunks);
+    const contentType = response.headers.get('content-type') || '';
+    let charsetMatch = contentType.match(/charset=([a-zA-Z0-9_-]+)/i);
+    if (!charsetMatch) {
+      const head = buffer.subarray(0, 2048).toString('ascii');
+      charsetMatch = head.match(/<meta[^>]+charset=["']?([a-zA-Z0-9_-]+)/i);
+    }
+    const charset = charsetMatch ? charsetMatch[1].toLowerCase() : 'utf-8';
+    if (charset !== 'utf-8' && charset !== 'utf8') {
+      try {
+        return new TextDecoder(charset).decode(buffer);
+      } catch {}
+    }
+    const decodedUtf8 = buffer.toString('utf8');
+    if (decodedUtf8.includes('\uFFFD')) {
+      try {
+        const decodedGbk = new TextDecoder('gbk').decode(buffer);
+        if (!decodedGbk.includes('\uFFFD')) {
+          return decodedGbk;
+        }
+      } catch {}
+    }
+    return decodedUtf8;
   } finally {
     clearTimeout(timeout);
   }

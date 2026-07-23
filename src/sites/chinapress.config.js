@@ -1,6 +1,7 @@
 export const chinapressConfig = {
   id: 'chinapress',
   source: 'China Press',
+  country: 'MY',
   latestUrl: 'https://www.chinapress.com.my/',
   timezone: 'Asia/Kuala_Lumpur',
   transport: { listing: 'playwright', article: 'playwright' },

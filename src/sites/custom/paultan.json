@@ -1,0 +1,13 @@
+{
+  "id": "paultan",
+  "source": "Paultan.org",
+  "country": "MY",
+  "latestUrl": "https://paultan.org/",
+  "timezone": "Asia/Kuala_Lumpur",
+  "transport": { "listing": "playwright", "article": "playwright" },
+  "articleLimit": 3,
+  "candidateLimit": 12,
+  "selectors": { "listingArticleLinks": "ul.posts.posts-archive h2 a" },
+  "addedVia": "agent",
+  "addedAt": "2026-07-16T00:00:00.000Z"
+}

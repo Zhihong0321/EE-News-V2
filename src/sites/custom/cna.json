@@ -1,0 +1,13 @@
+{
+  "id": "cna",
+  "source": "CNA",
+  "country": "SG",
+  "latestUrl": "https://www.channelnewsasia.com/",
+  "timezone": "Asia/Singapore",
+  "transport": { "listing": "playwright", "article": "playwright" },
+  "articleLimit": 3,
+  "candidateLimit": 12,
+  "selectors": { "listingArticleLinks": ".card-object__figure > a.link" },
+  "addedVia": "agent",
+  "addedAt": "2026-07-16T00:00:00.000Z"
+}

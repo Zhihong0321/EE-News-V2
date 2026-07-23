@@ -2,7 +2,7 @@
 
 Use this sequence for every new source.
 
-1. Create `src/sites/<id>.config.js` with `id`, `source`, `latestUrl`, `timezone`, `transport`, limits, and selectors.
+1. Create `src/sites/<id>.config.js` with `id`, `source`, `country` (2-letter ISO 3166-1 code), `latestUrl`, `timezone`, `transport`, limits, and selectors.
 2. Create `src/sites/<id>.js` with the adapter contract:
    - `today()` using the site's timezone
    - `collectLinks(page, today)`

@@ -1,0 +1,13 @@
+{
+  "id": "starproperty",
+  "source": "StarProperty",
+  "country": "MY",
+  "latestUrl": "https://www.starproperty.my/news",
+  "timezone": "Asia/Kuala_Lumpur",
+  "transport": { "listing": "playwright", "article": "playwright" },
+  "articleLimit": 3,
+  "candidateLimit": 12,
+  "selectors": { "listingArticleLinks": ".news-item__image a[itemprop=\"url\"]" },
+  "addedVia": "agent",
+  "addedAt": "2026-07-16T00:00:00.000Z"
+}

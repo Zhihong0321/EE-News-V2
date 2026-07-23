@@ -1,6 +1,7 @@
 export const theedgeConfig = {
   id: 'theedge',
   source: 'The Edge Malaysia',
+  country: 'MY',
   latestUrl: 'https://theedgemalaysia.com/',
   timezone: 'Asia/Kuala_Lumpur',
   transport: { listing: 'playwright', article: 'playwright' },

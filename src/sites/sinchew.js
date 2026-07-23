@@ -38,7 +38,7 @@ export const sinchewAdapter = {
   ...config,
   today: malaysiaDate,
 
-  async collectLinks(page, today) {
+  async collectLinks(page, since) {
     const response = await page.goto(config.latestUrl, { waitUntil: 'domcontentloaded', timeout: crawlPolicy.navigationTimeoutMs });
     assertUsableResponse(response, config.latestUrl);
     await page.locator(config.selectors.listingArticleLinks).first().waitFor({ state: 'attached', timeout: 30000 });
@@ -53,13 +53,14 @@ export const sinchewAdapter = {
       const parsed = new URL(href);
       const isSinChew = parsed.hostname === 'sinchew.com.my' || parsed.hostname.endsWith('.sinchew.com.my');
       const isArticle = /^\/news\/\d{8}\/[^/]+\/\d+$/.test(parsed.pathname);
-      if (!isSinChew || !isArticle || dateFromArticleUrl(href) !== today || seen.has(href)) return false;
+      const articleDate = dateFromArticleUrl(href);
+      if (!isSinChew || !isArticle || !articleDate || articleDate < since || seen.has(href)) return false;
       seen.add(href);
       return true;
     }).slice(0, config.candidateLimit);
   },
 
-  async readArticle(context, link, today) {
+  async readArticle(context, link, since) {
     const page = await context.newPage();
     try {
       const response = await page.goto(link.href, { waitUntil: 'domcontentloaded', timeout: crawlPolicy.navigationTimeoutMs });
@@ -101,10 +102,11 @@ export const sinchewAdapter = {
       }, { selectors: config.selectors, ignoredParagraphPrefixes: config.ignoredParagraphPrefixes });
 
       const publishedAt = metadata.datePublished ? new Date(metadata.datePublished) : null;
-      if (!publishedAt || Number.isNaN(publishedAt.getTime()) || malaysiaDate(publishedAt) !== today) return null;
+      if (!publishedAt || Number.isNaN(publishedAt.getTime()) || malaysiaDate(publishedAt) < since) return null;
 
       return {
         source: config.source,
+        country: config.country,
         title: clean(metadata.headline || link.title),
         url: link.href,
         published_at: publishedAt.toISOString(),

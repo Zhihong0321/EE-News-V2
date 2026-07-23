@@ -3,16 +3,28 @@ import { sinchewAdapter } from './sinchew.js';
 import { chinapressAdapter } from './chinapress.js';
 import { theedgeAdapter } from './theedge.js';
 import { utusanAdapter } from './utusan.js';
+import { cnnesAdapter } from './cnnes.js';
+import { xinhuaEnergyAdapter } from './xinhua-energy.js';
+import { cnenergynewsAdapter } from './cnenergynews.js';
+import { naverAdapter } from './naver.js';
+import { nhkAdapter } from './nhk.js';
+import { nikkeiAdapter } from './nikkei.js';
 
 const adapters = {
   [thestarAdapter.id]: thestarAdapter,
   [sinchewAdapter.id]: sinchewAdapter,
   [chinapressAdapter.id]: chinapressAdapter,
   [theedgeAdapter.id]: theedgeAdapter,
-  [utusanAdapter.id]: utusanAdapter
+  [utusanAdapter.id]: utusanAdapter,
+  [cnnesAdapter.id]: cnnesAdapter,
+  [xinhuaEnergyAdapter.id]: xinhuaEnergyAdapter,
+  [cnenergynewsAdapter.id]: cnenergynewsAdapter,
+  [naverAdapter.id]: naverAdapter,
+  [nhkAdapter.id]: nhkAdapter,
+  [nikkeiAdapter.id]: nikkeiAdapter
 };
 
-const requiredFields = ['id', 'source', 'latestUrl', 'timezone', 'articleLimit', 'candidateLimit', 'today', 'collectLinks', 'readArticle'];
+const requiredFields = ['id', 'source', 'country', 'latestUrl', 'timezone', 'articleLimit', 'candidateLimit', 'today', 'collectLinks', 'readArticle'];
 
 export function validateAdapter(adapter) {
   const missing = requiredFields.filter((field) => adapter[field] === undefined || adapter[field] === null);

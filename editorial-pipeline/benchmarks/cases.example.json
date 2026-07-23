@@ -1,0 +1,24 @@
+[
+  {
+    "id": "supported-current-news",
+    "category": "supported-site-routing",
+    "url": "https://www.thestar.com.my/news/example/2026/07/16/example",
+    "date": "2026-07-16",
+    "expectedFetcher": "custom-site-crawler",
+    "expectFailure": false
+  },
+  {
+    "id": "unsupported-rendered-page",
+    "category": "javascript-rendered",
+    "url": "https://example.com/news/article",
+    "expectedFetcher": "crawl4ai",
+    "expectFailure": false
+  },
+  {
+    "id": "blocked-page",
+    "category": "blocked-request",
+    "url": "https://example.com/blocked",
+    "expectedStatusCode": 429,
+    "expectFailure": true
+  }
+]

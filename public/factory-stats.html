@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wire Factory — Fetch stats</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/factory.css" />
+</head>
+<body>
+<div class="dashboard" id="dashboard">
+  <header class="topbar">
+    <div>
+      <div class="factory-mark"><span class="signal-dot"></span> WIRE FACTORY</div>
+      <p>fetch stats</p>
+    </div>
+    <div class="topbar-actions">
+      <span id="connection-state" class="connection-state">connecting</span>
+      <a class="icon-button" href="/factory" title="Back to dashboard" aria-label="Back to dashboard">&#8592;</a>
+      <button class="icon-button" id="refresh-button" title="Refresh stats" aria-label="Refresh stats">&#8635;</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="workspace-section" style="margin-top: 0;">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Per fetcher</span>
+          <h2>News fetched per day</h2>
+        </div>
+        <time id="last-updated">Not updated</time>
+      </div>
+      <div class="stats-wrap">
+        <table class="stats-table">
+          <thead>
+            <tr id="stats-head-row">
+              <th class="stats-source-col">Fetcher</th>
+            </tr>
+          </thead>
+          <tbody id="stats-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<script src="/factory-stats.js"></script>
+</body>
+</html>

@@ -21,7 +21,7 @@ This project is intentionally a local monolith. One Node.js process runs one or 
 
 Every adapter must expose:
 
-- `id`, `source`, `latestUrl`, `timezone`
+- `id`, `source`, `country` (2-letter ISO 3166-1 code), `latestUrl`, `timezone`
 - positive `articleLimit` and `candidateLimit`
 - `today()`
 - `collectLinks(page, today)`

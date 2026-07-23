@@ -1,0 +1,13 @@
+{
+  "id": "soyacincau",
+  "source": "SoyaCincau",
+  "country": "MY",
+  "latestUrl": "https://soyacincau.com/",
+  "timezone": "Asia/Kuala_Lumpur",
+  "transport": { "listing": "playwright", "article": "playwright" },
+  "articleLimit": 3,
+  "candidateLimit": 12,
+  "selectors": { "listingArticleLinks": ".jeg_post_title a" },
+  "addedVia": "agent",
+  "addedAt": "2026-07-16T00:00:00.000Z"
+}

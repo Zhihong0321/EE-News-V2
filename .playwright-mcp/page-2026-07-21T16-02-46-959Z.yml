@@ -1,0 +1,275 @@
+- generic [active] [ref=e1]:
+  - generic [ref=e3]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7] [cursor=pointer]: 人民日报主管
+        - generic [ref=e9] [cursor=pointer]: 《中国能源报》社有限公司主办
+      - generic [ref=e10]:
+        - link "网站地图" [ref=e12] [cursor=pointer]:
+          - /url: /map
+        - link "联系我们" [ref=e15] [cursor=pointer]:
+          - /url: /about
+    - generic [ref=e16]:
+      - img "中国能源网" [ref=e19]
+      - list [ref=e21]:
+        - listitem [ref=e22]:
+          - link [ref=e23] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn
+            - paragraph [ref=e24]: 首页
+        - listitem [ref=e25]:
+          - link [ref=e26] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/jsxw
+            - paragraph [ref=e27]: 即时新闻
+        - listitem [ref=e28]:
+          - link [ref=e29] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/nyyw
+            - paragraph [ref=e30]: 能源要闻
+        - listitem [ref=e31]:
+          - link [ref=e32] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/jdgz
+            - paragraph [ref=e33]: 焦点关注
+        - listitem [ref=e34]:
+          - link [ref=e35] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/nypl
+            - paragraph [ref=e36]: 能源评论
+        - listitem [ref=e37]:
+          - link [ref=e38] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/nydj
+            - paragraph [ref=e39]: 能源党建
+        - listitem [ref=e40]:
+          - link [ref=e41] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/topics
+            - paragraph [ref=e42]: 热点专题
+        - listitem [ref=e43]:
+          - link [ref=e44] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/sthb
+            - paragraph [ref=e45]: 生态环保
+        - listitem [ref=e46]:
+          - link [ref=e47] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/rsdt
+            - paragraph [ref=e48]: 人事动态
+        - listitem [ref=e49]:
+          - link [ref=e50] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/nycs
+            - paragraph [ref=e51]: 能源城市
+        - listitem [ref=e52]:
+          - link [ref=e53] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/hqsy
+            - paragraph [ref=e54]: 环球视野
+        - listitem [ref=e55]:
+          - link [ref=e56] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/cyjj
+            - paragraph [ref=e57]: 产业聚焦
+        - listitem [ref=e58]:
+          - link [ref=e59] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/dwdl
+            - paragraph [ref=e60]: 电网电力
+        - listitem [ref=e61]:
+          - link [ref=e62] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/xny
+            - paragraph [ref=e63]: 新能源
+        - listitem [ref=e64]:
+          - link [ref=e65] [cursor=pointer]:
+            - /url: https://www.cnenergynews.cn/yq
+            - paragraph [ref=e66]: 油气
+      - generic [ref=e67]:
+        - textbox "站内搜索" [ref=e69]
+        - img "搜索" [ref=e71] [cursor=pointer]
+  - generic [ref=e72]:
+    - navigation "面包屑导航" [ref=e73]
+    - generic [ref=e74]:
+      - heading "国家能源局综合司关于开展电力建设工程施工和监理项目负责人违规任职、现场履职不到位问题专项整治的通知" [level=1] [ref=e75] [cursor=pointer]
+      - generic [ref=e76]: 来源：中国能源网2026年07月21日 15:11
+      - generic [ref=e77]:
+        - generic "分享到QQ空间" [ref=e78] [cursor=pointer]
+        - generic "分享到微信" [ref=e79] [cursor=pointer]
+        - generic "分享到微博" [ref=e80] [cursor=pointer]
+      - generic [ref=e82]:
+        - generic [ref=e83]:
+          - generic [ref=e84]:
+            - article [ref=e86]:
+              - generic [ref=e87]:
+                - paragraph [ref=e88]:
+                  - emphasis [ref=e89]: 国家能源局综合司关于开展电力建设工程施工和监理项目负责人违规任职、现场履职不到位问题专项整治的通知
+                - paragraph [ref=e90]: 国能综通安全〔2026〕72号
+                - paragraph [ref=e91]: 根据国务院安委会办公室关于开展“打非治违”工作的要求，为切实加强电力建设工程安全质量管理，有效防范和遏制各类安全质量事故，国家能源局决定组织开展电力建设工程施工和监理项目负责人违规任职、现场履职不到位问题专项整治工作。有关事项通知如下。
+                - paragraph [ref=e92]:
+                  - emphasis [ref=e93]: 一、严格落实人员任职要求
+                - paragraph [ref=e94]: （一）严格落实施工项目经理任职要求。大中型电力建设工程施工项目经理任职资格要求应符合《注册建造师执业管理办法（试行）》（建市〔2008〕48号）、《注册建造师执业工程规模标准（试行）》（建市〔2007〕171号）等国家有关规定；小型电力建设工程施工项目经理任职资格应符合工程所在地省级政府有关部门规定。无相关规定的，建设单位应明确相关要求。一名注册建造师在同一时期内只能担任一项电力建设工程施工项目经理。以下情形除外：同一工程相邻分段发包或分期施工的；合同约定的工程已经验收合格的；因非承包方原因，工程停工超过120天（含），且经建设单位书面同意的。
+                - paragraph [ref=e95]: （二）严格落实总监理工程师任职要求。电力建设工程总监理工程师任职资格要求应符合《注册监理工程师管理规定》（建设部令第147号）、《建设工程监理规范》（GB/T 50319-2013）、《电力建设工程监理规范》（DL/T 5434-2021）等国家及行业有关规定。一名注册监理工程师在同一时期内原则上应当只担任一项工程监理合同的总监理工程师。当需要同时担任多项电力建设工程监理合同的总监理工程师时，需经建设单位书面同意且最多不得超过三项。监理合同中已明确总监理工程师为专职的，或者同一建设单位将多个相邻的同类小型工程打捆委托给同一监理单位的，总监理工程师不得同时在其他工程中兼职。对于规模较小（110kV及以下）的输变电工程经建设单位书面同意，监理单位可结合实际情况按片区设置总监理工程师。当一名注册监理工程师担任两至三项电力建设工程监理合同的总监理工程师时，每个项目应设总监代表，当总监理工程师不在岗时，总监代表依据规定履行授权范围内监理工作。因非监理单位原因，工程停工超过120天（含），经建设单位书面同意，该项目不计入总监理工程师在管项目数量，可按规定担任其他项目总监理工程师。国家规定必须实行监理范围之外的电力工程，是否实行监理以及总监理工程师现场履职要求，由建设单位进行明确。
+                - paragraph [ref=e96]:
+                  - emphasis [ref=e97]: 二、严格规范人员履职管理
+                - paragraph [ref=e98]: （一）健全企业内部管理制度。电力工程建设单位应进一步完善内部管理制度，按规定分类明确施工项目经理、总监理工程师任职管理制度，应建立人员任职情况动态核查及在岗考勤机制，利用信息化手段加强对相关项目负责人在现场履职情况的内部监督。施工单位和监理单位结合自身发展实际，加强人才引进、持证人员培育和日常培训，提升人才储备水平，满足业务发展需要。
+                - paragraph [ref=e99]: （二）强化招投标环节审核。在电力建设工程招标投标阶段，建设单位应结合工程实际需要，合理设置施工项目经理、总监理工程师任职资格要求，要对施工项目经理、总监理工程师的任职资格和在其他项目任职情况进行严格审查。如总监理工程师已在其他项目任职，须提供相关工程建设单位书面同意文件。招标文件中，应对施工项目经理、总监理工程师人证不符以及隐瞒违规任职情况、未按规定现场履职、擅自离开项目现场等设置惩罚条款。
+                - paragraph [ref=e100]: （三）严格管控项目负责人变更。施工单位、监理单位要按照投标文件或合同约定派驻施工项目经理、总监理工程师，不得随意更换。确需更换的，需经建设单位书面同意，且重新派驻人员应当符合相应资格要求。建设单位要严格控制项目负责人变更，加强合同履约管理。工程建设过程中，建设单位同意项目负责人变更的，需将变更后的施工单位、监理单位法定代表人签署的项目负责人授权书和项目负责人签署的工程质量终身责任承诺书、项目负责人资格证书以及建设单位同意变更的材料，于10个工作日内在国家能源局电力建设工程质量监督信息系统（以下简称电力质监信息系统）中完成补录。
+                - paragraph [ref=e101]: （四）严格落实施工现场履职要求。施工项目经理每月在现场履职时间不得少于本月施工时间的80%，超过一定规模的危险性较大的分部分项工程施工时，施工项目经理应在现场履职。总监理工程师每月在现场履职时间应符合合同约定。施工项目经理、总监理工程师确需离开现场的，应按规定向建设单位履行书面请假手续，并应委托项目相关负责人代行职责，保障现场管理不空岗、责任不落空。在施工现场带班检查，在项目驻地进行办公、参加会议、组织协调、编制审核技术文件等与项目管理直接相关的工作，以及经建设单位批准执行本项目相关出差任务，视为现场履职。
+                - paragraph [ref=e102]:
+                  - emphasis [ref=e103]: 三、强化监督执法力度
+                - paragraph [ref=e104]: （一）各有关单位要高度重视施工项目经理、总监理工程师任职和履职管理工作，认真组织开展在建电力建设工程相关问题梳理排查，及时进行问题整改，切实履行好主体责任。全国电力安委会企业成员单位应将有关情况统计表（见附件）原件和电子版、工作情况报告于2026年8月31日前报送国家能源局电力安全监管司。各电力质监机构要通知全国电力安委会企业成员单位之外的电力建设工程建设单位开展梳理排查，并收集汇总统计表于2026年8月31日前报送国家能源局（电力安全监管司）。
+                - paragraph [ref=e105]: （二）国家能源局将加强对新注册的电力建设工程违规任职情况的核查。电力质监机构在审核项目注册信息时，电力质监信息系统将自动同步核查施工项目经理、总监理工程师是否存在违规任职情形。电力质监机构根据电力质监信息系统提示的涉嫌违规任职的信息，督促建设单位核实，经核实确属违规的，应在工程开工前及时完成整改。
+                - paragraph [ref=e106]: （三）国家能源局各派出机构、各省级电力管理部门、电力质监机构要依照职责分工，结合电力建设工程安全质量提升年行动，将施工和监理项目负责人履职情况纳入年度重点专项监管内容，严厉打击人证分离和不在现场履职等违规行为。对施工和监理项目负责人违规任职、长期不在岗、履职不到位等问题，应依法依规采取责令整改、约谈通报等方式处理；情节严重的，将视程度建议相关部门给予撤销注册、罚款等处罚；对主观恶意违反相关规定造成重大隐患的情况，以及发生重大安全质量事故或者造成其他严重后果的，将严格行政处罚并依法追究刑事责任。
+                - paragraph [ref=e107]: 联系电话：010—81929276
+                - paragraph [ref=e108]: 电子邮箱：gchch@nea.gov.cn
+                - paragraph [ref=e109]: 附件：施工项目经理、总监理工程师违规任职自查自纠情况统计表
+                - paragraph [ref=e110]: 国家能源局综合司
+                - paragraph [ref=e111]: 2026年7月10日
+                - paragraph [ref=e112]:
+                  - paragraph
+            - paragraph [ref=e114]: 【责任编辑：李扬子】
+          - generic [ref=e115]: "投稿与新闻线索: 微信/手机: 15910626987 邮箱: 95866527@qq.com"
+          - generic [ref=e117]:
+            - img "中国能源网官方微信二维码" [ref=e118]
+            - generic [ref=e119]: 欢迎关注中国能源官方网站
+          - generic [ref=e120] [cursor=pointer]: 分享让更多人看到
+          - generic [ref=e122]: 中国能源网版权作品，未经书面授权，严禁转载或镜像，违者将被追究法律责任。
+          - generic "相关文章推荐" [ref=e124]:
+            - heading "即时新闻" [level=2] [ref=e126] [cursor=pointer]
+        - generic [ref=e128]:
+          - heading [level=2] [ref=e129] [cursor=pointer]:
+            - link "要闻推荐" [ref=e130]:
+              - /url: /nyyw
+          - list [ref=e131]:
+            - listitem [ref=e132]:
+              - link [ref=e133] [cursor=pointer]:
+                - /url: https://www.cnenergynews.cn/article/4STDQUuBFia
+                - paragraph [ref=e134]: 国家能源局综合司关于开展电力建设工程施工和监理项目负责人违规任职、现场履职不到位问题专项整治的通知
+            - listitem [ref=e135]:
+              - link [ref=e136] [cursor=pointer]:
+                - /url: https://www.cnenergynews.cn/article/4ST3aou6U1A
+                - paragraph [ref=e137]: 国家能源局：6月新增建档立卡新能源发电项目3825个
+            - listitem [ref=e138]:
+              - link [ref=e139] [cursor=pointer]:
+                - /url: https://www.cnenergynews.cn/article/4SPuOEVN2dm
+                - paragraph [ref=e140]: 2026年7月17日国内成品油价格调整
+            - listitem [ref=e141]:
+              - link [ref=e142] [cursor=pointer]:
+                - /url: https://www.cnenergynews.cn/article/4SPiDLfxzBn
+                - paragraph [ref=e143]: 全国统一电力市场建设按下“加速键”
+            - listitem [ref=e144]:
+              - link [ref=e145] [cursor=pointer]:
+                - /url: https://www.cnenergynews.cn/article/4SOuuFtZmhv
+                - paragraph [ref=e146]: 输配电价新政落地：工商业忙算账，电价分化调节区域经济
+          - heading [level=2] [ref=e147] [cursor=pointer]:
+            - link "热点专题" [ref=e148]:
+              - /url: /topics
+          - list [ref=e149]:
+            - listitem [ref=e150]:
+              - link [ref=e151] [cursor=pointer]:
+                - /url: https://www.cnenergynews.cn/zyjhzb
+            - listitem [ref=e154]:
+              - link [ref=e155] [cursor=pointer]:
+                - /url: https://www.cnenergynews.cn/article/4S4ynHqmWpE
+            - listitem [ref=e158]:
+              - link [ref=e159] [cursor=pointer]:
+                - /url: https://www.cnenergynews.cn/article/4S4zol8PUCX
+          - heading [level=2] [ref=e162] [cursor=pointer]:
+            - link "精彩视频" [ref=e163]:
+              - /url: /videos
+          - generic [ref=e164]:
+            - link "你在美团点的外卖是真门店吗？上海严查执照盗用，幽灵外卖迎硬核整治" [ref=e165] [cursor=pointer]:
+              - /url: https://www.cnenergynews.cn/article/4STJFsHdUrU
+            - link "新型电力系统的核心引擎 第二集 深远海风电送出" [ref=e171] [cursor=pointer]:
+              - /url: https://www.cnenergynews.cn/article/4SNDQLNhfNF
+            - link "新型电力系统的核心引擎第一集柔性直流输电技术" [ref=e177] [cursor=pointer]:
+              - /url: https://www.cnenergynews.cn/article/4SMQfvsWyEh
+            - link "《大国重器 直创未来》——记国网经研院直流技术攻关团队" [ref=e183] [cursor=pointer]:
+              - /url: https://www.cnenergynews.cn/article/4SK8b4unk6r
+          - heading [level=2] [ref=e189] [cursor=pointer]:
+            - link "精彩图集" [ref=e190]:
+              - /url: /tj
+          - generic [ref=e191]:
+            - link "2026世界人工智能大会闭幕" [ref=e192] [cursor=pointer]:
+              - /url: https://www.cnenergynews.cn/article/4STGOQF0Rmh
+            - link "核电送出特高压工程开展高空作业" [ref=e197] [cursor=pointer]:
+              - /url: https://www.cnenergynews.cn/article/4S63xJhDaoC
+            - link "中国成功发射通信技术试验卫星二十六号A星" [ref=e202] [cursor=pointer]:
+              - /url: https://www.cnenergynews.cn/article/4S63tHxJoay
+            - link "世界杯成为民众表达不满的契机，墨西哥迎来抗议浪潮" [ref=e207] [cursor=pointer]:
+              - /url: https://www.cnenergynews.cn/article/4Rw5qzyw0bH
+  - generic [ref=e214]:
+    - generic [ref=e215]:
+      - generic [ref=e216]:
+        - generic [ref=e217]: 合作伙伴
+        - generic [ref=e218]:
+          - list:
+            - listitem [ref=e219]:
+              - link "国家发改委" [ref=e220] [cursor=pointer]:
+                - /url: https://www.ndrc.gov.cn/
+            - listitem [ref=e221]:
+              - link "国资委" [ref=e222] [cursor=pointer]:
+                - /url: http://www.sasac.gov.cn/
+            - listitem [ref=e223]:
+              - link "国家工信部" [ref=e224] [cursor=pointer]:
+                - /url: https://wap.miit.gov.cn/
+            - listitem [ref=e225]:
+              - link "自然资源部" [ref=e226] [cursor=pointer]:
+                - /url: https://www.mnr.gov.cn/
+            - listitem [ref=e227]:
+              - link "生态环境部" [ref=e228] [cursor=pointer]:
+                - /url: https://www.mee.gov.cn/
+            - listitem [ref=e229]:
+              - link "国家能源局" [ref=e230] [cursor=pointer]:
+                - /url: http://www.nea.gov.cn/
+            - listitem [ref=e231]:
+              - link "矿山安监局" [ref=e232] [cursor=pointer]:
+                - /url: https://www.chinamine-safety.gov.cn/
+            - listitem [ref=e233]:
+              - link "中电联" [ref=e234] [cursor=pointer]:
+                - /url: http://www.cec.org.cn/
+            - listitem [ref=e235]:
+              - link "中煤协" [ref=e236] [cursor=pointer]:
+                - /url: http://www.coalchina.org.cn/
+            - listitem [ref=e237]:
+              - link "中国华能集团公司" [ref=e238] [cursor=pointer]:
+                - /url: http://www.chng.com.cn/
+            - listitem [ref=e239]:
+              - link "中国能建" [ref=e240] [cursor=pointer]:
+                - /url: http://www.ceec.net.cn/
+            - listitem [ref=e241]:
+              - link "中国电建" [ref=e242] [cursor=pointer]:
+                - /url: http://www.powerchina.cn
+            - listitem [ref=e243]:
+              - link "中国能源学会" [ref=e244] [cursor=pointer]:
+                - /url: http://www.zgny.org.cn/
+            - listitem [ref=e245]:
+              - link "中国汽车报" [ref=e246] [cursor=pointer]:
+                - /url: http://www.cnautonews.com
+            - listitem [ref=e247]:
+              - link "新华网-能源" [ref=e248] [cursor=pointer]:
+                - /url: http://www.xinhuanet.com/energy/
+            - listitem [ref=e249]:
+              - link "中经网能源" [ref=e250] [cursor=pointer]:
+                - /url: http://www.ce.cn/cysc/ny/index.shtml
+            - listitem [ref=e251]:
+              - link "光明网经济" [ref=e252] [cursor=pointer]:
+                - /url: https://economy.gmw.cn
+      - paragraph [ref=e256] [cursor=pointer]: 扫描二维码关注"中国能源报"官方微信
+    - generic [ref=e258]:
+      - generic [ref=e259]:
+        - link "关于我们" [ref=e260] [cursor=pointer]:
+          - /url: /about
+        - link "联系我们" [ref=e261] [cursor=pointer]:
+          - /url: /lxwm
+        - link "版权声明" [ref=e262] [cursor=pointer]:
+          - /url: /bqsm
+        - link "广告服务" [ref=e263] [cursor=pointer]:
+          - /url: /about
+        - link "本网公示" [ref=e264] [cursor=pointer]:
+          - /url: /sm
+      - generic [ref=e265]: 地址：北京市金台西路2号人民日报社新媒体大厦 联系电话：010-65369469
+      - generic [ref=e266]: 违法和不良信息举报电话：010-65369452 举报邮箱：95866527@qq.com
+      - generic [ref=e267]:
+        - link "互联网新闻信息服务许可证10120190006 |" [ref=e269] [cursor=pointer]:
+          - /url: /article/4OTlwE73LFQ
+        - link "增值电信业务经营许可证 京B2-20240802 |" [ref=e271] [cursor=pointer]:
+          - /url: /article/4OTlwFIBpte
+        - link "广播电视节目制作经营许可证(京)字第29656号 |" [ref=e273] [cursor=pointer]:
+          - /url: /article/4OTlwEnMxjW
+        - link "网络出版服务许可证(京)字第406号" [ref=e275] [cursor=pointer]:
+          - /url: /article/4OTlwGEEBr7
+      - generic [ref=e276]:
+        - text: 中国能源网版权所有 @ 2019 中国能源报社 |
+        - link "京ICP备14049483号-5 |" [ref=e278] [cursor=pointer]:
+          - /url: "https://beian.miit.gov.cn "
+        - link "京公网安备 11010502033025号" [ref=e280] [cursor=pointer]:
+          - /url: "http://www.beian.gov.cn/portal/registerSystemInfo?recordcode=11010502036099 "

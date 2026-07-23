@@ -1,0 +1,13 @@
+{
+  "id": "sinarharian",
+  "source": "Sinar Harian",
+  "country": "MY",
+  "latestUrl": "https://www.sinarharian.com.my/terkini",
+  "timezone": "Asia/Kuala_Lumpur",
+  "transport": { "listing": "playwright", "article": "playwright" },
+  "articleLimit": 3,
+  "candidateLimit": 12,
+  "selectors": { "listingArticleLinks": "a[href*=\"/article/\"]" },
+  "addedVia": "agent",
+  "addedAt": "2026-07-16T00:00:00.000Z"
+}

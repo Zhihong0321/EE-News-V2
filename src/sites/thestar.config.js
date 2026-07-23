@@ -2,6 +2,7 @@
 export const thestarConfig = {
   id: 'thestar',
   source: 'The Star',
+  country: 'MY',
   latestUrl: 'https://www.thestar.com.my/news/latest',
   timezone: 'Asia/Kuala_Lumpur',
   transport: { listing: 'playwright', article: 'playwright' },

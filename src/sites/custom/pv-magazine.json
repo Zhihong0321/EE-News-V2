@@ -1,0 +1,13 @@
+{
+  "id": "pv-magazine",
+  "source": "PV Magazine",
+  "country": "DE",
+  "latestUrl": "https://www.pv-magazine.com/",
+  "timezone": "Europe/Berlin",
+  "transport": { "listing": "playwright", "article": "playwright" },
+  "articleLimit": 3,
+  "candidateLimit": 12,
+  "selectors": { "listingArticleLinks": "a.post-block__image" },
+  "addedVia": "agent",
+  "addedAt": "2026-07-16T00:00:00.000Z"
+}

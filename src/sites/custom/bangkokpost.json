@@ -1,0 +1,13 @@
+{
+  "id": "bangkokpost",
+  "source": "Bangkok Post",
+  "country": "TH",
+  "latestUrl": "https://www.bangkokpost.com/thailand",
+  "timezone": "Asia/Bangkok",
+  "transport": { "listing": "playwright", "article": "playwright" },
+  "articleLimit": 3,
+  "candidateLimit": 12,
+  "selectors": { "listingArticleLinks": ".news--list h3 a, .boxnews--highlight h3 a" },
+  "addedVia": "agent",
+  "addedAt": "2026-07-16T10:48:49.000Z"
+}

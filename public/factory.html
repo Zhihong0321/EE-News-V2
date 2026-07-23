@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Wire Factory</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="/factory.css" />
+</head>
+<body>
+<section class="login-view" id="login-view">
+  <form class="login-panel" id="login-form">
+    <div class="factory-mark"><span class="signal-dot"></span> WIRE FACTORY</div>
+    <h1>Operations access</h1>
+    <label for="factory-password">Password</label>
+    <input id="factory-password" name="password" type="password" autocomplete="current-password" autofocus required />
+    <button type="submit">Enter factory</button>
+    <p class="login-error" id="login-error" role="alert"></p>
+    <a href="/">Return to news portal</a>
+  </form>
+</section>
+
+<div class="dashboard" id="dashboard" hidden>
+  <header class="topbar">
+    <div>
+      <div class="factory-mark"><span class="signal-dot"></span> WIRE FACTORY</div>
+      <p>crawler operations</p>
+    </div>
+    <div class="topbar-actions">
+      <span id="connection-state" class="connection-state">connecting</span>
+      <a class="icon-link" href="/factory/stats" title="Fetch stats" aria-label="Fetch stats">&#128202;</a>
+      <a class="icon-link" href="/" title="Open news portal" aria-label="Open news portal">&#8599;</a>
+      <button class="icon-button" id="refresh-button" title="Refresh dashboard" aria-label="Refresh dashboard">&#8635;</button>
+      <button class="logout-button" id="logout-button">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="llm-banner" id="llm-banner" role="alert" hidden></div>
+
+    <section class="workspace-section llm-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Enrichment health</span>
+          <h2>AI providers</h2>
+        </div>
+        <span id="llm-overall">no calls yet</span>
+      </div>
+      <div id="llm-panel" class="llm-panel">
+        <div class="empty-state">No AI provider calls recorded yet.</div>
+      </div>
+    </section>
+
+    <section class="summary-grid" aria-label="Crawler summary">
+      <div class="metric"><span>Active jobs</span><strong id="metric-active">0</strong></div>
+      <div class="metric"><span>Worker processes</span><strong id="metric-processes">0</strong></div>
+      <div class="metric"><span>Completed runs</span><strong id="metric-completed">0</strong></div>
+      <div class="metric"><span>Articles saved</span><strong id="metric-articles">0</strong></div>
+      <div class="metric metric-alert"><span>Failed / stale</span><strong id="metric-failed">0</strong></div>
+    </section>
+
+    <section class="workspace-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Live floor</span>
+          <h2>Work in progress</h2>
+        </div>
+        <time id="last-updated">Not updated</time>
+      </div>
+      <div id="active-jobs" class="active-jobs">
+        <div class="empty-state">No active crawler jobs.</div>
+      </div>
+    </section>
+
+    <section class="workspace-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Database queue</span>
+          <h2>Article pipeline</h2>
+        </div>
+        <div class="pipeline-heading-actions">
+          <button type="button" class="run-button" id="fix-corrupted-button" title="Re-enrich corrupted text from raw news using AGY (Gemini 3.6 Flash Low)">Fix Corrupted (AGY Refill)</button>
+          <button type="button" class="run-button" id="retry-failed-button" title="Re-run failed pipeline stages that are past their backoff window">Retry failed now</button>
+          <span id="pipeline-state">checking database</span>
+        </div>
+      </div>
+      <div id="pipeline-summary" class="pipeline-summary"></div>
+      <div id="published-note" class="published-note"></div>
+      <div class="pipeline-wrap">
+        <table class="pipeline-table">
+          <thead>
+            <tr>
+              <th>Article</th>
+              <th>Distill</th>
+              <th>Tag</th>
+              <th>Dedup</th>
+              <th>Enrich</th>
+              <th>Render</th>
+              <th>Updated</th>
+            </tr>
+          </thead>
+          <tbody id="pipeline-body"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="workspace-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Dispatch</span>
+          <h2>Source controls</h2>
+        </div>
+        <span id="source-count">0 sources</span>
+      </div>
+      <div class="backfill-controls">
+        <label for="since-date">Fetch since (each site's local date)</label>
+        <input type="date" id="since-date" />
+        <button type="button" class="run-button" id="run-all-button">Run all since date</button>
+        <button type="button" class="icon-button" id="clear-since-button" title="Clear date">Clear</button>
+      </div>
+      <div id="source-list" class="source-table"></div>
+    </section>
+
+    <section class="workspace-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Run log</span>
+          <h2>Recent activity</h2>
+        </div>
+      </div>
+      <div class="history-wrap">
+        <table class="history-table">
+          <thead>
+            <tr><th>Status</th><th>Source</th><th>Started</th><th>Duration</th><th>Result</th><th>Process</th></tr>
+          </thead>
+          <tbody id="history-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+<script src="/factory.js"></script>
+</body>
+</html>

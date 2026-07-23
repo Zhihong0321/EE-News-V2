@@ -38,7 +38,7 @@ export const thestarAdapter = {
   ...config,
   today: malaysiaDate,
 
-  async collectLinks(page, today) {
+  async collectLinks(page, since) {
     const response = await page.goto(config.latestUrl, { waitUntil: 'domcontentloaded', timeout: crawlPolicy.navigationTimeoutMs });
     assertUsableResponse(response, config.latestUrl);
     await page.locator(config.selectors.listingArticleLinks).first().waitFor({ state: 'attached', timeout: 30000 });
@@ -51,13 +51,14 @@ export const thestarAdapter = {
     const seen = new Set();
     return links.filter(({ href }) => {
       if (!href || !href.startsWith('https://www.thestar.com.my/')) return false;
-      if (dateFromArticleUrl(href) !== today || seen.has(href)) return false;
+      const articleDate = dateFromArticleUrl(href);
+      if (!articleDate || articleDate < since || seen.has(href)) return false;
       seen.add(href);
       return true;
     }).slice(0, config.candidateLimit);
   },
 
-  async readArticle(context, link, today) {
+  async readArticle(context, link, since) {
     const page = await context.newPage();
     try {
       const response = await page.goto(link.href, { waitUntil: 'domcontentloaded', timeout: crawlPolicy.navigationTimeoutMs });
@@ -97,10 +98,11 @@ export const thestarAdapter = {
 
       const publishedAt = metadata.datePublished ? new Date(metadata.datePublished) : null;
       if (!publishedAt || Number.isNaN(publishedAt.getTime())) return null;
-      if (malaysiaDate(publishedAt) !== today) return null;
+      if (malaysiaDate(publishedAt) < since) return null;
 
       return {
         source: config.source,
+        country: config.country,
         title: clean(metadata.headline || link.title),
         url: link.href,
         published_at: publishedAt.toISOString(),

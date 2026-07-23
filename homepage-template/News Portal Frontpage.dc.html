@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian Wire — Front Page</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gloock&family=Instrument+Serif:ital@0;1&family=Hanken+Grotesk:wght@400;500;600;700&family=Spline+Sans+Mono:wght@500;600&family=Noto+Serif+SC:wght@700;900&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#f5f4f1;--paper2:#ecebe6;--card:#fdfdfb;
+  --ink:#14161a;--ink2:#4c505a;--ink3:#878b94;--line:#e0dfd9;
+  --a3:#0a2d6e;--a1:#1553cf;--a2:#2fa6d9;--aink:#1043a8;
+  --ia3:#cfe6ff;--ia1:#7fb0ff;--ia2:#3f7bf0;
+  --inv-bg:#14161a;--inv-ink:#eceef2;
+  --wash:radial-gradient(120% 60% at 50% 0%,rgba(21,83,207,.08),rgba(10,45,110,.03) 45%,transparent 75%);
+  --shadow:0 1px 2px rgba(15,25,50,.04),0 10px 30px -14px rgba(15,25,50,.12);
+  --gdir:135deg;
+  --gh:linear-gradient(var(--gdir),var(--a3) 0%,var(--a1) 48%,var(--a2) 100%);
+  --gr:linear-gradient(90deg,var(--a1),var(--a2) 60%,transparent);
+  --gi:linear-gradient(var(--gdir),var(--ia3) 0%,var(--ia1) 48%,var(--ia2) 100%);
+  --df:"Gloock",georgia,serif;
+  --if:"Instrument Serif",georgia,serif;
+  --bf:"Hanken Grotesk","Helvetica Neue",arial,sans-serif;
+  --mf:"Spline Sans Mono",ui-monospace,monospace;
+}
+[data-theme="dark"]{
+  --paper:#0c0e12;--paper2:#12151b;--card:#141821;
+  --ink:#eceef2;--ink2:#b3b8c2;--ink3:#7d828c;--line:#232833;
+  --a3:#cfe6ff;--a1:#7fb0ff;--a2:#3f7bf0;--aink:#8ab4ff;
+  --ia3:#0a2d6e;--ia1:#1553cf;--ia2:#2fa6d9;
+  --inv-bg:#e9ecf2;--inv-ink:#14161a;
+  --wash:radial-gradient(120% 60% at 50% 0%,rgba(127,176,255,.08),rgba(63,123,240,.03) 45%,transparent 75%);
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 12px 32px -14px rgba(0,0,0,.55);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--paper);color:var(--ink);font-family:var(--bf);font-size:17px;line-height:1.6;overflow-x:hidden;transition:background .35s,color .35s}
+a{color:var(--aink)}a:hover{color:var(--a1)}
+::selection{background:var(--a2);color:#fff}
+input::placeholder{color:var(--ink3)}
+html:not([data-lang="cn"]) .cn{display:none!important}
+[data-lang="cn"] .en{display:none!important}
+[data-lang="cn"]{--gdir:315deg;--df:"Noto Serif SC",serif;--if:"Noto Serif SC",serif;--bf:"Noto Sans SC",sans-serif}
+[data-lang="cn"] [data-cjk="title"]{line-height:1.35!important;letter-spacing:.02em!important;font-style:normal!important}
+[data-lang="cn"] [data-cjk="body"]{line-height:1.85!important;letter-spacing:.01em!important}
+[data-lang="en"] #btnEN,html:not([data-lang="cn"]) #btnEN,[data-lang="cn"] #btnCN{background:var(--ink)!important;color:var(--paper)!important}
+@keyframes heroIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+
+<div id="mProgress" aria-hidden="true" style="position:fixed;top:0;left:0;height:3px;width:0%;background:var(--gh);z-index:60"></div>
+
+<nav aria-label="Controls" style="position:fixed;top:12px;right:12px;z-index:50;display:flex;align-items:center;gap:8px">
+  <div style="display:flex;border:1px solid var(--line);border-radius:999px;background:var(--card);box-shadow:var(--shadow);overflow:hidden">
+    <button id="btnEN" onClick="{{ toEN }}" style="font-family:var(--mf);font-size:12px;font-weight:600;letter-spacing:.06em;padding:7px 13px;border:0;background:none;color:var(--ink3);cursor:pointer">EN</button>
+    <button id="btnCN" onClick="{{ toCN }}" style="font-family:'Noto Sans SC',var(--mf);font-size:12px;font-weight:600;letter-spacing:.06em;padding:7px 12px;border:0;background:none;color:var(--ink3);cursor:pointer;white-space:nowrap">中文</button>
+  </div>
+  <button onClick="{{ flipTheme }}" aria-label="Toggle theme" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:conic-gradient(var(--ink) 0 50%,var(--card) 50% 100%);box-shadow:var(--shadow);cursor:pointer"></button>
+</nav>
+
+<header data-screen-label="Masthead" style="position:relative;padding:76px 22px 0;background:var(--wash)">
+  <div style="max-width:460px;margin:0 auto;animation:heroIn .9s cubic-bezier(.22,1,.36,1) both">
+    <p style="font-family:var(--mf);font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--aink);margin-bottom:10px"><span class="en">Independent News Desk</span><span class="cn">独立新闻编辑部</span></p>
+    <h1 style="font-family:var(--df);font-weight:400;line-height:1;letter-spacing:-.01em;font-size:clamp(42px,12vw,54px);background:var(--gh);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;color:transparent">
+      <span class="en">Meridian Wire</span>
+      <span class="cn" style="letter-spacing:.04em">子午新闻</span>
+    </h1>
+    <p style="font-family:var(--mf);font-size:12px;color:var(--ink3);margin-top:10px;display:flex;flex-wrap:wrap;gap:6px 14px">
+      <span id="mwDate" style="color:var(--ink2);font-weight:600"></span>
+      <span class="en">Morning edition &middot; updated hourly</span>
+      <span class="cn">晨间版 &middot; 每小时更新</span>
+    </p>
+    <label style="display:flex;align-items:center;gap:10px;margin-top:22px;background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);padding:13px 16px;cursor:text">
+      <svg aria-hidden="true" width="17" height="17" viewBox="0 0 17 17" style="flex:none"><circle cx="7" cy="7" r="5.4" fill="none" stroke="var(--ink3)" stroke-width="1.8"></circle><line x1="11.2" y1="11.2" x2="15.4" y2="15.4" stroke="var(--ink3)" stroke-width="1.8" stroke-linecap="round"></line></svg>
+      <input id="mwSearch" onInput="{{ onSearch }}" type="search" autocomplete="off" placeholder="Search headlines, tags, regions…" style="flex:1;border:0;outline:0;background:none;color:var(--ink);font-family:var(--bf);font-size:16px"></input>
+    </label>
+    <div id="mwEmpty" style="display:none;margin-top:18px;font-family:var(--if);font-style:italic;font-size:18px;color:var(--ink3)"><span class="en">No stories match your search.</span><span class="cn" style="font-style:normal">没有符合搜索条件的新闻。</span></div>
+  </div>
+</header>
+
+<main style="max-width:460px;margin:0 auto;padding:0 22px 40px">
+
+<section data-screen-label="Top Story" data-reveal style="margin-top:34px">
+  <article data-article data-search="masela lng gas prabowo indonesia energy asean 马塞拉 天然气 印尼 能源" style="position:relative;background:var(--inv-bg);color:var(--inv-ink);border-radius:20px;padding:28px 24px 26px;overflow:hidden;box-shadow:var(--shadow)">
+    <span aria-hidden="true" style="position:absolute;inset:0;background:var(--gi);opacity:.14"></span>
+    <div style="position:relative;display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px">
+      <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--inv-bg);background:var(--gi);border-radius:999px;padding:4px 11px"><span class="en">Top story</span><span class="cn">头条</span></span>
+      <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--ia1);border:1px solid var(--ia1);border-radius:999px;padding:4px 11px"><span class="en">Energy</span><span class="cn">能源</span></span>
+    </div>
+    <h2 data-cjk="title" style="position:relative;font-family:var(--df);font-weight:400;font-size:27px;line-height:1.18;letter-spacing:-.01em;text-wrap:pretty">
+      <span class="en">&ldquo;We Need Money&rdquo; &mdash; Prabowo Ties Public Services to a $20.9&#8202;B Gas Bet</span>
+      <span class="cn">&ldquo;我们需要钱&rdquo;&mdash;&mdash;普拉博沃将公共服务寄望于209亿美元天然气押注</span>
+    </h2>
+    <p data-cjk="body" style="position:relative;font-family:var(--if);font-style:italic;font-size:18px;line-height:1.45;color:var(--ia1);margin-top:12px;text-wrap:pretty">
+      <span class="en">The Abadi Masela groundbreaking ends 26 years of waiting &mdash; but revenue is still years away.</span>
+      <span class="cn" style="font-style:normal">阿巴迪马塞拉动工为26年的等待画上句号&mdash;&mdash;但收入仍需数年。</span>
+    </p>
+    <p style="position:relative;font-family:var(--mf);font-size:11.5px;color:var(--ia1);opacity:.75;margin-top:16px"><span class="en">ASEAN &middot; Kompas.com &middot; 2 h ago</span><span class="cn">东盟 &middot; Kompas.com &middot; 2小时前</span></p>
+  </article>
+</section>
+
+<section data-screen-label="Malaysia" data-region data-reveal style="margin-top:48px">
+  <p style="font-family:var(--mf);font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);display:flex;align-items:center;gap:12px;margin-bottom:4px" style-after="content:'';flex:1;height:1px;background:var(--line)"><span style="color:var(--aink)">01</span><span class="en">Malaysia</span><span class="cn">马来西亚</span></p>
+  <div style="display:grid">
+    <article data-article data-search="malaysia budget subsidy ron95 fuel anwar 马来西亚 预算 燃油 补贴" style="padding:20px 0 18px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Economy</span><span class="cn">经济</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Putrajaya Signals Targeted RON95 Subsidy Rollout Before Budget 2027</span><span class="cn">布城释放信号：2027年预算前推行RON95定向补贴</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Bernama &middot; 1 h ago</span><span class="cn">马新社 &middot; 1小时前</span></p>
+    </article>
+    <article data-article data-search="malaysia semiconductor penang investment chips 马来西亚 半导体 槟城 投资" style="padding:20px 0 18px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Technology</span><span class="cn">科技</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Penang Chip Cluster Draws Fresh Packaging Investment as Supply Chains Split</span><span class="cn">供应链分化之下，槟城芯片集群再获封测新投资</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">The Edge &middot; 3 h ago</span><span class="cn">The Edge &middot; 3小时前</span></p>
+    </article>
+    <article data-article data-search="malaysia flood monsoon kelantan relief 马来西亚 洪水 季风 吉兰丹" style="padding:20px 0 18px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Climate</span><span class="cn">气候</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">East Coast Braces Early as Forecasters Warn of a Stronger Monsoon Season</span><span class="cn">气象部门警告季风季或更强，东海岸提前备汛</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">NST &middot; 5 h ago</span><span class="cn">新海峡时报 &middot; 5小时前</span></p>
+    </article>
+  </div>
+</section>
+
+<section data-screen-label="ASEAN" data-region data-reveal style="margin-top:44px">
+  <p style="font-family:var(--mf);font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);display:flex;align-items:center;gap:12px;margin-bottom:4px" style-after="content:'';flex:1;height:1px;background:var(--line)"><span style="color:var(--aink)">02</span><span class="en">ASEAN</span><span class="cn">东盟国家</span></p>
+  <div style="display:grid">
+    <article data-article data-search="indonesia masela lng tanimbar energy 印尼 马塞拉 天然气 东盟" style="padding:20px 0 18px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Energy</span><span class="cn">能源</span></span>
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Indonesia</span><span class="cn">印尼</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Masela Groundbreaking Puts Tanimbar on the LNG Map &mdash; and on the Clock</span><span class="cn">马塞拉动工：塔宁巴尔登上LNG版图，也进入倒计时</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Kompas.com &middot; 2 h ago</span><span class="cn">Kompas.com &middot; 2小时前</span></p>
+    </article>
+    <article data-article data-search="vietnam exports manufacturing tariff hanoi 越南 出口 制造业 关税" style="padding:20px 0 18px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Trade</span><span class="cn">贸易</span></span>
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Vietnam</span><span class="cn">越南</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Vietnam&rsquo;s Factory Boom Meets Its First Real Tariff Stress Test</span><span class="cn">越南制造业热潮迎来首次真正的关税压力测试</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Reuters &middot; 4 h ago</span><span class="cn">路透社 &middot; 4小时前</span></p>
+    </article>
+    <article data-article data-search="thailand tourism baht bangkok recovery 泰国 旅游 泰铢 曼谷" style="padding:20px 0 18px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Tourism</span><span class="cn">旅游</span></span>
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Thailand</span><span class="cn">泰国</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Strong Baht Cools Bangkok&rsquo;s Record Tourist Season</span><span class="cn">泰铢走强，为曼谷创纪录的旅游旺季降温</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Bangkok Post &middot; 6 h ago</span><span class="cn">曼谷邮报 &middot; 6小时前</span></p>
+    </article>
+  </div>
+</section>
+
+<section data-screen-label="China" data-region data-reveal style="margin-top:44px">
+  <p style="font-family:var(--mf);font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);display:flex;align-items:center;gap:12px;margin-bottom:4px" style-after="content:'';flex:1;height:1px;background:var(--line)"><span style="color:var(--aink)">03</span><span class="en">China</span><span class="cn">中国</span></p>
+  <div style="display:grid">
+    <article data-article data-search="china ev exports byd europe electric vehicle 中国 电动车 出口 欧洲" style="padding:20px 0 18px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Autos</span><span class="cn">汽车</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">China&rsquo;s EV Makers Pivot to Southeast Asia as European Doors Narrow</span><span class="cn">欧洲市场收紧，中国电动车厂商转向东南亚</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Caixin &middot; 2 h ago</span><span class="cn">财新 &middot; 2小时前</span></p>
+    </article>
+    <article data-article data-search="china property stimulus housing beijing 中国 房地产 刺激 楼市" style="padding:20px 0 18px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Property</span><span class="cn">房地产</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Beijing Weighs a Broader Housing Package as Tier-Two Prices Slip Again</span><span class="cn">二线城市房价再度下探，北京酝酿更大范围楼市方案</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">SCMP &middot; 4 h ago</span><span class="cn">南华早报 &middot; 4小时前</span></p>
+    </article>
+    <article data-article data-search="china ai chips compute datacenter 中国 人工智能 芯片 算力" style="padding:20px 0 18px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Technology</span><span class="cn">科技</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Domestic AI Chips Close the Gap in China&rsquo;s New Data-Center Build-Out</span><span class="cn">新一轮数据中心建设中，国产AI芯片正在缩小差距</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Caixin &middot; 7 h ago</span><span class="cn">财新 &middot; 7小时前</span></p>
+    </article>
+  </div>
+</section>
+
+<section data-screen-label="Japan + SK" data-region data-reveal style="margin-top:44px">
+  <p style="font-family:var(--mf);font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);display:flex;align-items:center;gap:12px;margin-bottom:4px" style-after="content:'';flex:1;height:1px;background:var(--line)"><span style="color:var(--aink)">04</span><span class="en">Japan &amp; South Korea</span><span class="cn">日本与韩国</span></p>
+  <div style="display:grid">
+    <article data-article data-search="japan lng imports inpex masela energy security 日本 LNG 进口 能源安全" style="padding:20px 0 18px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Energy</span><span class="cn">能源</span></span>
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Japan</span><span class="cn">日本</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Why Masela Matters in Tokyo: One Project, a Tenth of Japan&rsquo;s LNG Imports</span><span class="cn">马塞拉为何牵动东京：一个项目，占日本LNG进口的十分之一</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Nikkei &middot; 3 h ago</span><span class="cn">日经 &middot; 3小时前</span></p>
+    </article>
+    <article data-article data-search="south korea semiconductor exports memory chips 韩国 半导体 出口 存储" style="padding:20px 0 18px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Technology</span><span class="cn">科技</span></span>
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">South Korea</span><span class="cn">韩国</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Memory-Chip Supercycle Lifts Korean Exports to a Two-Year High</span><span class="cn">存储芯片超级周期推动韩国出口创两年新高</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Yonhap &middot; 5 h ago</span><span class="cn">韩联社 &middot; 5小时前</span></p>
+    </article>
+    <article data-article data-search="japan boj yen rates inflation 日本 日元 央行 利率" style="padding:20px 0 18px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Markets</span><span class="cn">市场</span></span>
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Japan</span><span class="cn">日本</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">The Yen Steadies as the BOJ Hints Its Tightening Cycle Is Nearly Done</span><span class="cn">日本央行暗示紧缩周期接近尾声，日元企稳</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Nikkei &middot; 8 h ago</span><span class="cn">日经 &middot; 8小时前</span></p>
+    </article>
+  </div>
+</section>
+
+<section data-screen-label="Europe + US" data-region data-reveal style="margin-top:44px">
+  <p style="font-family:var(--mf);font-size:11px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);display:flex;align-items:center;gap:12px;margin-bottom:4px" style-after="content:'';flex:1;height:1px;background:var(--line)"><span style="color:var(--aink)">05</span><span class="en">Europe &amp; US</span><span class="cn">欧美</span></p>
+  <div style="display:grid">
+    <article data-article data-search="us federal reserve rates cut inflation 美国 美联储 利率 通胀" style="padding:20px 0 18px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Markets</span><span class="cn">市场</span></span>
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">US</span><span class="cn">美国</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Fed Officials Split on a September Cut as Services Inflation Lingers</span><span class="cn">服务业通胀迟迟不退，美联储官员在9月降息问题上现分歧</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Reuters &middot; 1 h ago</span><span class="cn">路透社 &middot; 1小时前</span></p>
+    </article>
+    <article data-article data-search="europe energy gas storage winter lng 欧洲 能源 天然气 储气" style="padding:20px 0 18px;border-bottom:1px solid var(--line)">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Energy</span><span class="cn">能源</span></span>
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Europe</span><span class="cn">欧洲</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Europe Refills Gas Storage Early, Betting Against Another Price Spike</span><span class="cn">欧洲提前补充天然气库存，押注价格不再飙升</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">FT &middot; 4 h ago</span><span class="cn">金融时报 &middot; 4小时前</span></p>
+    </article>
+    <article data-article data-search="us tech antitrust ai regulation washington 美国 科技 反垄断 监管" style="padding:20px 0 18px">
+      <div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px">
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--aink);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">Policy</span><span class="cn">政策</span></span>
+        <span style="font-family:var(--mf);font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border:1px solid var(--line);border-radius:999px;padding:3px 10px"><span class="en">US</span><span class="cn">美国</span></span>
+      </div>
+      <h3 data-cjk="title" style="font-family:var(--df);font-weight:400;font-size:21px;line-height:1.24;letter-spacing:-.01em;text-wrap:pretty"><span class="en">Washington&rsquo;s AI Rulebook Takes Shape &mdash; and Big Tech Is Writing Margin Notes</span><span class="cn">华盛顿AI监管框架成形，科技巨头忙着&ldquo;写批注&rdquo;</span></h3>
+      <p style="font-family:var(--mf);font-size:11.5px;color:var(--ink3);margin-top:9px"><span class="en">Bloomberg &middot; 6 h ago</span><span class="cn">彭博社 &middot; 6小时前</span></p>
+    </article>
+  </div>
+</section>
+
+</main>
+
+<footer style="margin-top:48px;padding:26px 22px 44px;border-top:1px solid var(--line);text-align:center;font-family:var(--mf);font-size:11.5px;line-height:1.9;color:var(--ink3)">
+  <b style="color:var(--ink2);font-weight:600"><span class="en">Meridian Wire</span><span class="cn">子午新闻</span></b><br>
+  <span class="en">Curated by region &middot; sample edition</span>
+  <span class="cn">按地区编排 &middot; 样例版面</span>
+</footer>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:430,&quot;height&quot;:940},&quot;colorway&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;Flame Blue&quot;,&quot;options&quot;:[&quot;Flame Blue&quot;,&quot;Verdigris&quot;,&quot;Champagne&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;defaultLang&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;EN&quot;,&quot;options&quot;:[&quot;EN&quot;,&quot;中文&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Appearance&quot;},&quot;animations&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Motion&quot;}}">
+class Component extends DCLogic {
+  componentDidMount() {
+    const D = document.documentElement;
+    const get = k => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+    this._setLang(get('masela-lang') || (this.props.defaultLang === '中文' ? 'cn' : 'en'));
+    this._setTheme(get('masela-theme') || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+    const d = new Date(), el = document.getElementById('mwDate');
+    if (el) el.textContent = d.toISOString().slice(0, 10);
+    const bar = document.getElementById('mProgress');
+    this._onScroll = () => {
+      const h = D.scrollHeight - innerHeight;
+      if (bar) bar.style.width = (h > 0 ? (scrollY / h * 100) : 0) + '%';
+    };
+    addEventListener('scroll', this._onScroll, { passive: true });
+    this._onScroll();
+    if (this.props.animations !== false) this._initReveals();
+  }
+  componentWillUnmount() { removeEventListener('scroll', this._onScroll); }
+  _setLang(l) {
+    const D = document.documentElement;
+    D.setAttribute('data-lang', l);
+    D.setAttribute('lang', l === 'cn' ? 'zh-Hans' : 'en');
+    try { localStorage.setItem('masela-lang', l); } catch (e) {}
+  }
+  _setTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    try { localStorage.setItem('masela-theme', t); } catch (e) {}
+    this._applyColorway();
+  }
+  _applyColorway() {
+    const cw = {
+      'Flame Blue': { light: ['#0a2d6e', '#1553cf', '#2fa6d9', '#1043a8'], dark: ['#cfe6ff', '#7fb0ff', '#3f7bf0', '#8ab4ff'] },
+      'Verdigris':  { light: ['#0c4a40', '#127a63', '#3aa88a', '#0f6350'], dark: ['#d2f2e2', '#7fd3ae', '#2c9a78', '#8fdcba'] },
+      'Champagne':  { light: ['#5f430f', '#a8781f', '#c9a04a', '#8a621a'], dark: ['#f3dfae', '#d9b56a', '#a87c2c', '#e5c885'] }
+    };
+    const set = cw[this.props.colorway] || cw['Flame Blue'];
+    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const a = dark ? set.dark : set.light, ia = dark ? set.light : set.dark;
+    const s = document.documentElement.style;
+    s.setProperty('--a3', a[0]); s.setProperty('--a1', a[1]); s.setProperty('--a2', a[2]); s.setProperty('--aink', a[3]);
+    s.setProperty('--ia3', ia[0]); s.setProperty('--ia1', ia[1]); s.setProperty('--ia2', ia[2]);
+  }
+  _search(q) {
+    q = (q || '').trim().toLowerCase();
+    let hits = 0;
+    document.querySelectorAll('[data-article]').forEach(a => {
+      const hay = (a.textContent + ' ' + (a.getAttribute('data-search') || '')).toLowerCase();
+      const show = !q || hay.indexOf(q) >= 0;
+      a.style.display = show ? '' : 'none';
+      if (show) hits++;
+    });
+    document.querySelectorAll('[data-region]').forEach(sec => {
+      const any = [...sec.querySelectorAll('[data-article]')].some(a => a.style.display !== 'none');
+      sec.style.display = any ? '' : 'none';
+    });
+    const empty = document.getElementById('mwEmpty');
+    if (empty) empty.style.display = hits ? 'none' : 'block';
+  }
+  _initReveals() {
+    const ease = 'cubic-bezier(.22,1,.36,1)';
+    const els = [...document.querySelectorAll('[data-reveal]')];
+    els.forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(28px)';
+      el.style.transition = 'opacity .85s ' + ease + ', transform .85s ' + ease;
+    });
+    const io = new IntersectionObserver(entries => {
+      entries.forEach(en => {
+        if (!en.isIntersecting) return;
+        io.unobserve(en.target);
+        en.target.style.opacity = '1';
+        en.target.style.transform = 'none';
+      });
+    }, { threshold: 0.12, rootMargin: '0px 0px -6% 0px' });
+    els.forEach(el => io.observe(el));
+  }
+  renderVals() {
+    return {
+      toEN: () => this._setLang('en'),
+      toCN: () => this._setLang('cn'),
+      flipTheme: () => this._setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'),
+      onSearch: e => this._search(e.target.value)
+    };
+  }
+}
+</script>
+</body>
+</html>

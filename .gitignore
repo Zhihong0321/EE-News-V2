@@ -1,2 +1,15 @@
 node_modules/
 output/
+editorial-pipeline/output/
+*.log
+.legion/
+scratch/
+.st-inspect*
+*.png
+
+# Local secrets — never commit
+.env
+.env.*
+!.env.example
+editorial-pipeline/.runtime/
+editorial-pipeline/.venv/

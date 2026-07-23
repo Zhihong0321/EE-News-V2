@@ -39,23 +39,24 @@ export const utusanAdapter = {
   ...config,
   today: malaysiaDate,
 
-  async collectLinksHttp(today) {
+  async collectLinksHttp(since) {
     const links = await discoverFeedLinks(config.feedUrls, {
-      today,
+      since,
       timezone: config.timezone,
       limit: config.candidateLimit
     });
     return links.filter((link) => new URL(link.href).hostname === 'www.utusan.com.my');
   },
 
-  async readArticleHttp(link, today) {
+  async readArticleHttp(link, since) {
     if (new URL(link.href).hostname !== 'www.utusan.com.my') return null;
     const html = await fetchHtml(link.href);
     const metadata = extractArticle(html, link.href);
     const publishedAt = metadata.datePublished ? new Date(metadata.datePublished) : null;
-    if (!publishedAt || Number.isNaN(publishedAt.getTime()) || malaysiaDate(publishedAt) !== today) return null;
+    if (!publishedAt || Number.isNaN(publishedAt.getTime()) || malaysiaDate(publishedAt) < since) return null;
     return {
       source: config.source,
+      country: config.country,
       title: clean(metadata.title || link.title),
       url: link.href,
       published_at: publishedAt.toISOString(),
@@ -67,7 +68,7 @@ export const utusanAdapter = {
     };
   },
 
-  async collectLinks(page, today) {
+  async collectLinks(page) {
     const response = await page.goto(config.latestUrl, { waitUntil: 'domcontentloaded', timeout: crawlPolicy.navigationTimeoutMs });
     assertUsableResponse(response, config.latestUrl);
     const links = await page.locator(config.selectors.listingArticleLinks).evaluateAll((anchors) => anchors.map((anchor) => ({
@@ -84,7 +85,7 @@ export const utusanAdapter = {
     }).slice(0, config.candidateLimit);
   },
 
-  async readArticle(context, link, today) {
+  async readArticle(context, link, since) {
     const page = await context.newPage();
     try {
       const response = await page.goto(link.href, { waitUntil: 'domcontentloaded', timeout: crawlPolicy.navigationTimeoutMs });
@@ -128,10 +129,11 @@ export const utusanAdapter = {
       }, { selectors: config.selectors, ignoredParagraphPrefixes: config.ignoredParagraphPrefixes });
 
       const publishedAt = metadata.datePublished ? new Date(metadata.datePublished) : null;
-      if (!publishedAt || Number.isNaN(publishedAt.getTime()) || malaysiaDate(publishedAt) !== today) return null;
+      if (!publishedAt || Number.isNaN(publishedAt.getTime()) || malaysiaDate(publishedAt) < since) return null;
 
       return {
         source: config.source,
+        country: config.country,
         title: clean(metadata.headline || link.title),
         url: link.href,
         published_at: publishedAt.toISOString(),

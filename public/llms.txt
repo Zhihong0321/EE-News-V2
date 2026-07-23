@@ -1,0 +1,7 @@
+# Eter News
+
+> Eter News is an independent news desk by Eternalgy that collects completed article renders locally and arranges them by region, in English and Chinese.
+
+## Pages
+
+- [Eter News](https://news.eternalgy.me/): Independent news desk by Eternalgy — completed article renders, collected locally and arranged by region, in English and Chinese.

@@ -1,6 +1,7 @@
 export const sinchewConfig = {
   id: 'sinchew',
   source: 'Sin Chew Daily',
+  country: 'MY',
   latestUrl: 'https://www.sinchew.com.my/latest',
   timezone: 'Asia/Kuala_Lumpur',
   transport: { listing: 'playwright', article: 'playwright' },

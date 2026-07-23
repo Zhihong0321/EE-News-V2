@@ -7,6 +7,7 @@ test('every registered site has the adapter contract', () => {
   assert.equal(new Set(adapters.map((adapter) => adapter.id)).size, adapters.length);
   assert.ok(adapters.length >= 1);
   for (const adapter of adapters) {
+    assert.match(adapter.country, /^[A-Z]{2}$/);
     assert.match(adapter.latestUrl, /^https:\/\//);
     assert.equal(typeof adapter.today, 'function');
     assert.equal(typeof adapter.collectLinks, 'function');

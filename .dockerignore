@@ -1,0 +1,31 @@
+node_modules/
+.git/
+output/
+
+# Local secrets — never bake into the image
+.env
+.env.*
+!.env.example
+
+editorial-pipeline/.runtime/
+editorial-pipeline/.venv/
+editorial-pipeline/output/
+
+# Legion swarm logs/artifacts, local debug scratch
+.legion/
+.legion-*.log
+.playwright-mcp/
+.st-inspect*.log
+.st-inspect*.mjs
+debug.log
+*.log
+*.png
+
+# Misc local scratch files, not needed at runtime
+homepage-template/
+homepage-template.zip
+news-tempate.zip
+_template-check/
+by-*.md
+ai-web-research-pipeline-plan.md
+masela-infographic.html

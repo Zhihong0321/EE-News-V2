@@ -1,0 +1,13 @@
+{
+  "id": "vnexpress",
+  "source": "VnExpress",
+  "country": "VN",
+  "latestUrl": "https://vnexpress.net/",
+  "timezone": "Asia/Ho_Chi_Minh",
+  "transport": { "listing": "playwright", "article": "playwright" },
+  "articleLimit": 3,
+  "candidateLimit": 12,
+  "selectors": { "listingArticleLinks": "h3.title-news a" },
+  "addedVia": "agent",
+  "addedAt": "2026-07-16T00:00:00.000Z"
+}

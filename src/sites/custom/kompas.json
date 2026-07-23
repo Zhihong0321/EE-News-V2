@@ -1,0 +1,14 @@
+{
+  "id": "kompas",
+  "source": "Kompas.com",
+  "country": "ID",
+  "latestUrl": "https://www.kompas.com/",
+  "timezone": "Asia/Jakarta",
+  "transport": { "listing": "playwright", "article": "playwright" },
+  "articleLimit": 3,
+  "candidateLimit": 12,
+  "allowSubdomains": true,
+  "selectors": { "listingArticleLinks": "a[data-index][href*=\"/read/\"]" },
+  "addedVia": "agent",
+  "addedAt": "2026-07-16T00:00:00.000Z"
+}

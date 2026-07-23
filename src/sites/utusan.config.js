@@ -1,6 +1,7 @@
 export const utusanConfig = {
   id: 'utusan',
   source: 'Utusan Malaysia',
+  country: 'MY',
   latestUrl: 'https://www.utusan.com.my/terkini/',
   feedUrls: ['https://www.utusan.com.my/feed/'],
   timezone: 'Asia/Kuala_Lumpur',
