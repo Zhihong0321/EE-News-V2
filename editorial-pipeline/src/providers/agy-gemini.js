@@ -9,12 +9,73 @@
 // Contract matches the other providers: enrich(prompt, article) resolves to
 //   { content: <parsed JSON>, rawText, provenance }.
 import { spawn } from 'node:child_process';
+import { existsSync } from 'node:fs';
 import { articleCutoffDate } from '../enrichment-prompt.js';
 import { validateEnrichment } from '../enrichment-validator.js';
 import { cleanCorruptedText } from '../utils.js';
 
 const DEFAULT_AGY_BIN = 'C:/Users/Eternalgy/AppData/Local/agy/bin/agy.exe';
+// Legion owns the authenticated AGY account pool. Its runner detects quota/auth
+// failures, cools the affected profile, and retries the request with the next
+// ready profile from LowLedgerLegion/agy-sessions.
+const DEFAULT_AGY_ROTATION_RUNNER = 'C:/Users/Eternalgy/projects/low-legion/run-agy-agent.mjs';
 const DEFAULT_MODEL = 'Gemini 3.6 Flash (High)';
+const DEFAULT_MAX_CONCURRENT_CALLS = 3;
+const DEFAULT_MIN_START_GAP_MS = 4000;
+
+function positiveInteger(value, fallback) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function nonNegativeInteger(value, fallback) {
+  const parsed = Number(value);
+  return Number.isInteger(parsed) && parsed >= 0 ? parsed : fallback;
+}
+
+// A process-wide provider instance shares this gate across every article. It
+// spaces request starts without sacrificing up to three long-running requests.
+export function createAgyCallGate({ maxConcurrent = DEFAULT_MAX_CONCURRENT_CALLS, minStartGapMs = DEFAULT_MIN_START_GAP_MS } = {}) {
+  const queue = [];
+  let active = 0;
+  let lastStartAt = 0;
+  let timer = null;
+
+  function drain() {
+    if (timer || active >= maxConcurrent || queue.length === 0) return;
+    const waitMs = Math.max(0, lastStartAt + minStartGapMs - Date.now());
+    if (waitMs > 0) {
+      timer = setTimeout(() => { timer = null; drain(); }, waitMs);
+      return;
+    }
+    const job = queue.shift();
+    active += 1;
+    lastStartAt = Date.now();
+    Promise.resolve()
+      .then(job.task)
+      .then(job.resolve, job.reject)
+      .finally(() => { active -= 1; drain(); });
+    drain();
+  }
+
+  return {
+    run(task) {
+      return new Promise((resolve, reject) => {
+        queue.push({ task, resolve, reject });
+        drain();
+      });
+    },
+    rejectPending(error) {
+      while (queue.length) queue.shift().reject(error);
+    }
+  };
+}
+
+export function isAgyPoolExhaustedError(error) {
+  return /all agy sessions exhausted|no ready agy session \(all cooling down \/ unauth\)/i.test(
+    String(error?.agyOutput || error?.message || '')
+  );
+}
 
 function tryParseJson(text) {
   const trimmed = String(text || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '');
@@ -112,11 +173,30 @@ function sanitizeSources(content, cutoff) {
   return content;
 }
 
-// Spawn one agy CLI call and resolve with its stdout text. Rejects on non-zero
-// exit, spawn failure, or timeout.
-function runAgy({ bin, model, prompt, cwd, timeoutMs }) {
+export function buildAgyCommand({ bin, runner, useSessionRotation, model, prompt, cwd }) {
+  if (useSessionRotation) {
+    if (!runner || !existsSync(runner)) {
+      throw new Error(`AGY session rotation runner is unavailable: ${runner || '(not configured)'}`);
+    }
+    return {
+      command: process.execPath,
+      args: [runner, cwd, model, prompt],
+      usesSessionRotation: true
+    };
+  }
+  return {
+    command: bin,
+    args: ['-p', prompt, '--model', model, '--dangerously-skip-permissions'],
+    usesSessionRotation: false
+  };
+}
+
+// Spawn one AGY request and resolve with its stdout text. By default, calls the
+// Legion runner rather than agy.exe directly so a quota/auth failure rotates to
+// another locally configured Google profile before this provider gives up.
+function runAgy({ bin, runner, useSessionRotation, model, prompt, cwd, timeoutMs }) {
   return new Promise((resolve, reject) => {
-    const args = ['-p', prompt, '--model', model, '--dangerously-skip-permissions'];
+    const { command, args } = buildAgyCommand({ bin, runner, useSessionRotation, model, prompt, cwd });
     const env = {
       ...process.env,
       PYTHONIOENCODING: 'utf-8',
@@ -125,7 +205,7 @@ function runAgy({ bin, model, prompt, cwd, timeoutMs }) {
     };
     let child;
     try {
-      child = spawn(bin, args, { shell: false, windowsHide: true, cwd, env });
+      child = spawn(command, args, { shell: false, windowsHide: true, cwd, env });
     } catch (error) {
       reject(new Error(`agy spawn failed (is AGY_BIN correct?): ${error.message}`));
       return;
@@ -146,7 +226,9 @@ function runAgy({ bin, model, prompt, cwd, timeoutMs }) {
       const out = Buffer.concat(stdoutChunks).toString('utf8');
       const err = Buffer.concat(stderrChunks).toString('utf8');
       if (code === 0) return resolve(out);
-      const e = new Error(`agy failed (exit ${code}): ${(err || out).trim().slice(0, 300)}`);
+      const agyOutput = (err || out).trim();
+      const e = new Error(`agy failed (exit ${code}): ${agyOutput.slice(0, 300)}`);
+      e.agyOutput = agyOutput;
       reject(e);
     });
   });
@@ -156,9 +238,15 @@ const JSON_RULE = '\n\nReturn ONLY the final JSON object defined in the OUTPUT S
 
 export function createAgyProvider(options = {}) {
   const bin = options.bin || process.env.AGY_BIN || DEFAULT_AGY_BIN;
+  const runner = options.runner ?? process.env.AGY_ROTATION_RUNNER ?? DEFAULT_AGY_ROTATION_RUNNER;
+  const useSessionRotation = options.sessionRotation ?? (process.env.AGY_SESSION_ROTATION !== '0');
   const model = options.model || process.env.AGY_MODEL || DEFAULT_MODEL;
   const timeoutMs = options.timeoutMs || 240000;
   const cwd = options.cwd || process.cwd();
+  const maxConcurrent = positiveInteger(options.maxConcurrent ?? process.env.AGY_MAX_CONCURRENCY, DEFAULT_MAX_CONCURRENT_CALLS);
+  const minStartGapMs = nonNegativeInteger(options.minStartGapMs ?? process.env.AGY_MIN_INTERVAL_MS, DEFAULT_MIN_START_GAP_MS);
+  const agyCallGate = createAgyCallGate({ maxConcurrent, minStartGapMs });
+  let exhaustedPoolError = null;
   // Two-pass enrichment by default: pass 1 generates, pass 2 reviews & perfects
   // the draft. Set { refine: false } (or AGY_REFINE=0) for a single generate pass.
   const refine = options.refine ?? (process.env.AGY_REFINE !== '0');
@@ -168,7 +256,21 @@ export function createAgyProvider(options = {}) {
   // it is agentic and can research on its own. We ask for JSON-only output and
   // parse stdout.
   async function callForEnrichment(promptText) {
-    const rawText = await runAgy({ bin, model, prompt: promptText, cwd, timeoutMs });
+    if (exhaustedPoolError) throw exhaustedPoolError;
+    const rawText = await agyCallGate.run(async () => {
+      // A queued task may only reach the front after another call exhausted the
+      // pool. Skip AGY immediately so its caller can use the next provider.
+      if (exhaustedPoolError) throw exhaustedPoolError;
+      try {
+        return await runAgy({ bin, runner, useSessionRotation, model, prompt: promptText, cwd, timeoutMs });
+      } catch (error) {
+        if (isAgyPoolExhaustedError(error)) {
+          exhaustedPoolError = error;
+          agyCallGate.rejectPending(error);
+        }
+        throw error;
+      }
+    });
     const content = tryParseJson(rawText);
     if (content && hasEnrichmentShape(content)) return { content, rawText };
     throw new Error(content

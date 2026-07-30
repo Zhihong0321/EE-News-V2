@@ -28,7 +28,7 @@ async function main() {
 
   const sql = await fs.readFile(path.join(__dirname, 'schema.sql'), 'utf8');
   await getPool().query(sql);
-  console.log('Schema applied: articles, article_enrichments (+ indexes).');
+  console.log('Schema applied: articles, article_enrichments, article_pipeline_status, llm_providers, llm_models, llm_task_routes (+ indexes).');
 }
 
 main()

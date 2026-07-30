@@ -62,9 +62,11 @@ export async function runPipeline(adapter, opts = {}) {
   // --- Stage 2: enrich (best-effort — never fails the pipeline) ---
   let packetPath = null;
   try {
-    const { createProvider } = await import('./enrich-provider.js');
+    const { createProviderForTask } = await import('./enrich-provider.js');
     const { enrichNewsFile } = await import('../../editorial-pipeline/src/enrich-news.js');
-    const enrichProvider = createProvider(provider, { model });
+    // Honours the factory's 'enrich' chain; `provider` is the fallback when the
+    // factory has nothing configured.
+    const enrichProvider = await createProviderForTask(provider, { model });
     console.log(`[pipeline] enriching ${articleCount} article(s) via provider "${provider}"...`);
     const enriched = await enrichNewsFile(fetchResult.outputPath, {
       provider: enrichProvider,

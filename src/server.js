@@ -12,6 +12,20 @@ import { listCrawlJobs, summarizeCrawlJobs } from './core/factory-status.js';
 import { getPipelineDashboard, isDbEnabled } from './db/store.js';
 import { retryFailedStages, retryableStages } from './core/retry-pipeline.js';
 import { snapshot as llmHealthSnapshot } from './core/llm-health.js';
+import {
+  ROUTABLE_TASKS,
+  API_STYLES,
+  listProviders,
+  createProvider as createLlmProvider,
+  updateProvider as updateLlmProvider,
+  deleteProvider as deleteLlmProvider,
+  addModel as addLlmModel,
+  deleteModel as deleteLlmModel,
+  listRoutes,
+  setTaskChain,
+  getProviderSecret
+} from './db/llm-config.js';
+import { invalidate as invalidateLlmRouting, buildRequest, extractText } from './core/llm-registry.js';
 
 loadEnv();
 
@@ -550,6 +564,161 @@ const server = http.createServer(async (req, res) => {
         return sendJson(res, 200, { ok: true, model, processed: results });
       } catch (error) {
         return sendJson(res, 500, { ok: false, error: error.message });
+      }
+    }
+
+    // --- LLM control plane -------------------------------------------------
+    // Providers + models + per-task fallback chains, all DB-backed. Every write
+    // invalidates the routing cache so a running crawl picks up the change on
+    // its next article rather than after a restart.
+    if (pathname === '/api/factory/llm' && req.method === 'GET') {
+      if (!isDbEnabled()) {
+        return sendJson(res, 200, {
+          ok: true, enabled: false, tasks: ROUTABLE_TASKS, apiStyles: API_STYLES,
+          providers: [], routes: {},
+          error: 'LLM settings require a database (set DATABASE_URL or SUPABASE_DB_URL)'
+        });
+      }
+      try {
+        const [providers, routes] = await Promise.all([listProviders(), listRoutes()]);
+        return sendJson(res, 200, { ok: true, enabled: true, tasks: ROUTABLE_TASKS, apiStyles: API_STYLES, providers, routes });
+      } catch (error) {
+        return sendJson(res, 500, { ok: false, error: error.message });
+      }
+    }
+
+    if (pathname.startsWith('/api/factory/llm') && !isDbEnabled()) {
+      return sendJson(res, 400, { ok: false, error: 'LLM settings require a database (set DATABASE_URL or SUPABASE_DB_URL)' });
+    }
+
+    if (pathname === '/api/factory/llm/providers' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      try {
+        const id = await createLlmProvider({
+          name: body.name,
+          apiStyle: body.apiStyle || 'anthropic',
+          baseUrl: body.baseUrl,
+          apiKey: body.apiKey,
+          enabled: body.enabled !== false,
+          notes: body.notes ?? null
+        });
+        // Convenience: accept a models array on create so adding a provider and
+        // its models is one action in the UI instead of two round-trips.
+        for (const model of Array.isArray(body.models) ? body.models : []) {
+          const entry = typeof model === 'string' ? { model } : model;
+          if (entry?.model) await addLlmModel(id, entry);
+        }
+        invalidateLlmRouting();
+        return sendJson(res, 201, { ok: true, id });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message });
+      }
+    }
+
+    const llmProviderMatch = pathname.match(/^\/api\/factory\/llm\/providers\/(\d+)$/);
+    if (llmProviderMatch && (req.method === 'PATCH' || req.method === 'DELETE')) {
+      const providerId = Number(llmProviderMatch[1]);
+      try {
+        if (req.method === 'DELETE') {
+          const removed = await deleteLlmProvider(providerId);
+          invalidateLlmRouting();
+          return sendJson(res, removed ? 200 : 404, { ok: removed, error: removed ? undefined : 'Provider not found' });
+        }
+        const body = await readJsonBody(req);
+        const updated = await updateLlmProvider(providerId, body);
+        invalidateLlmRouting();
+        return sendJson(res, updated ? 200 : 404, { ok: updated, error: updated ? undefined : 'Provider not found or no fields to update' });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message });
+      }
+    }
+
+    const llmModelsMatch = pathname.match(/^\/api\/factory\/llm\/providers\/(\d+)\/models$/);
+    if (llmModelsMatch && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      try {
+        const id = await addLlmModel(Number(llmModelsMatch[1]), {
+          model: body.model,
+          label: body.label ?? null,
+          enabled: body.enabled !== false
+        });
+        invalidateLlmRouting();
+        return sendJson(res, 201, { ok: true, id });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message });
+      }
+    }
+
+    const llmModelMatch = pathname.match(/^\/api\/factory\/llm\/models\/(\d+)$/);
+    if (llmModelMatch && req.method === 'DELETE') {
+      try {
+        const removed = await deleteLlmModel(Number(llmModelMatch[1]));
+        invalidateLlmRouting();
+        return sendJson(res, removed ? 200 : 404, { ok: removed, error: removed ? undefined : 'Model not found' });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message });
+      }
+    }
+
+    // Replace one task's whole ordered chain. body: { entries: [{ modelId, enabled }] }
+    const llmRouteMatch = pathname.match(/^\/api\/factory\/llm\/routes\/([a-z]+)$/);
+    if (llmRouteMatch && req.method === 'PUT') {
+      const task = llmRouteMatch[1];
+      const body = await readJsonBody(req);
+      try {
+        const count = await setTaskChain(task, Array.isArray(body.entries) ? body.entries : []);
+        invalidateLlmRouting(task);
+        return sendJson(res, 200, { ok: true, task, count });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message });
+      }
+    }
+
+    // Live credential check: smallest possible completion against one model.
+    if (pathname === '/api/factory/llm/test' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      const providerId = Number(body.providerId);
+      const model = String(body.model || '').trim();
+      if (!Number.isInteger(providerId) || !model) {
+        return sendJson(res, 400, { ok: false, error: 'providerId and model are required' });
+      }
+      const provider = await getProviderSecret(providerId);
+      if (!provider) return sendJson(res, 404, { ok: false, error: 'Provider not found' });
+
+      // 2048 tokens, not a handful: models that emit a reasoning block before
+      // the answer return an EMPTY answer if the budget only covers reasoning,
+      // which would report a perfectly healthy key as broken.
+      const request = buildRequest({ ...provider, token: provider.apiKey, model }, 'Reply with exactly: OK', { maxTokens: 2048 });
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 30000);
+      const startedAt = Date.now();
+      try {
+        const response = await fetch(request.url, {
+          method: 'POST',
+          headers: request.headers,
+          body: JSON.stringify(request.body),
+          signal: controller.signal
+        });
+        const latencyMs = Date.now() - startedAt;
+        if (!response.ok) {
+          const raw = await response.text().catch(() => '');
+          let message = raw.slice(0, 200);
+          try { message = JSON.parse(raw).error?.message || message; } catch { /* keep raw */ }
+          return sendJson(res, 200, { ok: false, status: response.status, latencyMs, error: message });
+        }
+        const payload = await response.json();
+        const text = extractText(payload, provider.apiStyle).trim();
+        return sendJson(res, 200, {
+          ok: Boolean(text),
+          status: response.status,
+          latencyMs,
+          reply: text.slice(0, 120),
+          error: text ? undefined : 'Endpoint answered but returned empty text (model may have spent the token budget on reasoning)'
+        });
+      } catch (error) {
+        return sendJson(res, 200, { ok: false, latencyMs: Date.now() - startedAt, error: error.message });
+      } finally {
+        clearTimeout(timer);
       }
     }
 

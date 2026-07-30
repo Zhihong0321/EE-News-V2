@@ -5,6 +5,7 @@ import { createCavotiTerraProvider } from '../../editorial-pipeline/src/provider
 import { createAnthropicProvider } from '../../editorial-pipeline/src/providers/anthropic-sonnet.js';
 import { createAgyProvider } from '../../editorial-pipeline/src/providers/agy-gemini.js';
 import { createClaudeCodeProvider } from '../../editorial-pipeline/src/providers/claude-code.js';
+import { chainFor } from './llm-registry.js';
 
 /**
  * Wraps a primary provider and one or more fallbacks. If the primary provider
@@ -64,4 +65,45 @@ export function createProvider(name, flags = {}) {
   const cavoti = createCavotiTerraProvider({ model: 'gpt-5.6-terra' });
   const anthropic = createAnthropicProvider({ model: process.env.ANTHROPIC_MODEL || 'sonnet-5' });
   return createFallbackProvider([agy, claude, cavoti, anthropic]);
+}
+
+/**
+ * Enrichment provider honouring the factory's 'enrich' chain when one is
+ * configured, falling back to createProvider(name) otherwise.
+ *
+ * Enrichment is not a one-shot completion like distill/tag: it streams SSE,
+ * uses server-side web search, and runs a research + finalize turn. Only the
+ * Anthropic messages shape implements that here, so openai-style entries in the
+ * chain are skipped with a warning rather than silently producing garbage. The
+ * factory UI flags them for the same reason.
+ *
+ * @param {string} name    legacy provider name, used when nothing is configured
+ * @param {object} [flags] { model }
+ */
+export async function createProviderForTask(name, flags = {}) {
+  let chain = [];
+  try {
+    chain = await chainFor('enrich');
+  } catch (error) {
+    console.warn(`[enrich-provider] enrich routing lookup failed, using "${name}": ${error.message}`);
+  }
+  if (!chain.length) return createProvider(name, flags);
+
+  const usable = [];
+  for (const entry of chain) {
+    if (entry.apiStyle !== 'anthropic') {
+      console.warn(`[enrich-provider] skipping "${entry.name}/${entry.model}": enrichment needs an Anthropic-style endpoint, got "${entry.apiStyle}".`);
+      continue;
+    }
+    usable.push(createAnthropicProvider({
+      baseUrl: entry.baseUrl,
+      authToken: entry.token,
+      model: entry.model
+    }));
+  }
+  if (!usable.length) {
+    console.warn(`[enrich-provider] factory enrich chain had no Anthropic-style entries — falling back to "${name}".`);
+    return createProvider(name, flags);
+  }
+  return createFallbackProvider(usable);
 }

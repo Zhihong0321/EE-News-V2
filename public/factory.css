@@ -340,3 +340,64 @@ main { width: min(1480px, 100%); margin: 0 auto; padding: 30px clamp(18px, 4vw, 
   .source-row .source-meta { display: none; }
   .job-stats { grid-template-columns: repeat(2, 1fr); gap: 12px; }
 }
+
+/* --- LLM control plane (providers, models, per-task routing) --------------- */
+/* Scoped under .llm-cfg-* so nothing here collides with the .llm-provider
+   health cards rendered by renderLlm() above. */
+.llm-config-section { margin-top: 0; margin-bottom: 8px; }
+.llm-config-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 18px; }
+.llm-config-col h3 { margin: 0 0 10px; font: 600 12px var(--mono); text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+.llm-hint { margin: 0 0 12px; font: 11px var(--mono); color: var(--muted); line-height: 1.5; }
+
+.llm-provider-form { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; align-items: end; }
+.llm-field { display: grid; gap: 4px; min-width: 0; }
+.llm-field-wide { grid-column: 1 / -1; }
+.llm-field label { font: 11px var(--mono); color: var(--muted); }
+.llm-field input, .llm-field select {
+  height: 32px; padding: 0 9px; min-width: 0;
+  border: 1px solid var(--line); border-radius: 3px;
+  background: var(--surface-2); color: var(--text); font: 12px var(--mono);
+}
+.llm-provider-form .run-button { grid-column: 1 / -1; justify-self: start; }
+
+.llm-provider-list { display: grid; gap: 10px; }
+.llm-cfg-card { padding: 12px 14px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.llm-cfg-card.disabled { opacity: .5; }
+.llm-cfg-card header { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.llm-cfg-card header strong { font: 600 13px var(--sans); }
+.llm-cfg-meta { display: flex; gap: 10px; flex-wrap: wrap; margin: 6px 0 8px; font: 11px var(--mono); color: var(--cyan); }
+.llm-cfg-meta .muted { color: var(--muted); }
+.pill { padding: 1px 6px; border: 1px solid var(--line); border-radius: 10px; font: 10px var(--mono); color: var(--muted); }
+.link-button { border: 0; background: none; padding: 0; color: var(--cyan); font: 11px var(--mono); cursor: pointer; }
+.link-button:hover { text-decoration: underline; }
+.link-button.danger { color: var(--red); }
+.link-button:disabled { color: var(--muted); cursor: wait; text-decoration: none; }
+
+.llm-model-list { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 5px; }
+.llm-model-list li { display: flex; align-items: center; gap: 10px; font: 11px var(--mono); }
+.llm-model-list li.muted { color: var(--muted); }
+.llm-model-list code { color: var(--text); }
+.llm-add-model { display: flex; gap: 8px; align-items: center; }
+.llm-add-model input {
+  flex: 1; min-width: 0; height: 28px; padding: 0 8px;
+  border: 1px solid var(--line); border-radius: 3px;
+  background: var(--surface-2); color: var(--text); font: 11px var(--mono);
+}
+
+.llm-route-task { padding: 12px 14px; margin-bottom: 10px; border: 1px solid var(--line); border-radius: 4px; background: var(--surface); }
+.llm-route-task h4 { margin: 0 0 9px; font: 600 12px var(--mono); text-transform: uppercase; color: var(--text); }
+.llm-route-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+.llm-route-index { width: 16px; font: 11px var(--mono); color: var(--muted); }
+.llm-route-row select {
+  flex: 1; min-width: 0; height: 30px; padding: 0 8px;
+  border: 1px solid var(--line); border-radius: 3px;
+  background: var(--surface-2); color: var(--text); font: 11px var(--mono);
+}
+.llm-warn { font: 10px var(--mono); color: var(--amber); white-space: nowrap; }
+.llm-route-task .run-button { margin-top: 6px; justify-self: start; }
+
+@media (max-width: 900px) {
+  .llm-config-grid { grid-template-columns: minmax(0, 1fr); }
+  .llm-provider-form { grid-template-columns: minmax(0, 1fr); }
+  .llm-field { grid-column: 1 / -1; }
+}

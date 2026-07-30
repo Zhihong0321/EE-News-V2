@@ -69,3 +69,54 @@ create table if not exists article_pipeline_status (
 
 create index if not exists article_pipeline_status_lookup_idx
   on article_pipeline_status (stage, status, next_retry_at);
+
+-- ---------------------------------------------------------------------------
+-- LLM control plane: which provider/keys exist, which models they expose, and
+-- which model runs which pipeline task. Managed from the factory UI; read by
+-- src/core/llm-registry.js. When these tables are empty (or no DATABASE_URL is
+-- set) every LLM caller falls back to its hard-coded env-based chain, so the
+-- crawl keeps working exactly as before.
+-- ---------------------------------------------------------------------------
+
+-- One row per API endpoint + credential pair.
+-- api_style: 'anthropic' (POST {base_url}/v1/messages, x-api-key header)
+--         or 'openai'    (POST {base_url}/v1/chat/completions, Bearer header)
+create table if not exists llm_providers (
+  id          bigint generated always as identity primary key,
+  name        text not null unique,
+  api_style   text not null default 'anthropic',
+  base_url    text not null,
+  api_key     text not null,
+  enabled     boolean not null default true,
+  notes       text,
+  created_at  timestamptz not null default now(),
+  updated_at  timestamptz not null default now()
+);
+
+-- Models a provider exposes. `model` is the exact id sent in the request body.
+create table if not exists llm_models (
+  id          bigint generated always as identity primary key,
+  provider_id bigint not null references llm_providers (id) on delete cascade,
+  model       text not null,
+  label       text,
+  enabled     boolean not null default true,
+  created_at  timestamptz not null default now(),
+  unique (provider_id, model)
+);
+
+create index if not exists llm_models_provider_idx on llm_models (provider_id);
+
+-- Ordered fallback chain per task. position 0 is tried first; on failure the
+-- caller falls through to position 1, and so on.
+-- task: 'distill' | 'tag' | 'enrich'
+create table if not exists llm_task_routes (
+  id          bigint generated always as identity primary key,
+  task        text not null,
+  position    integer not null,
+  model_id    bigint not null references llm_models (id) on delete cascade,
+  enabled     boolean not null default true,
+  updated_at  timestamptz not null default now(),
+  unique (task, position)
+);
+
+create index if not exists llm_task_routes_task_idx on llm_task_routes (task, position);

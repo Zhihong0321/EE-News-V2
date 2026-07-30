@@ -53,6 +53,45 @@
       </div>
     </section>
 
+    <section class="workspace-section llm-config-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Control plane</span>
+          <h2>AI providers &amp; task routing</h2>
+        </div>
+        <span id="llm-config-state">loading</span>
+      </div>
+
+      <div class="llm-config-grid">
+        <div class="llm-config-col">
+          <h3>Providers</h3>
+          <form class="llm-provider-form" id="llm-provider-form">
+            <div class="llm-field"><label for="llm-name">Name</label>
+              <input id="llm-name" name="name" placeholder="stepfun" required /></div>
+            <div class="llm-field"><label for="llm-style">API style</label>
+              <select id="llm-style" name="apiStyle">
+                <option value="anthropic">anthropic — /v1/messages</option>
+                <option value="openai">openai — /v1/chat/completions</option>
+              </select></div>
+            <div class="llm-field llm-field-wide"><label for="llm-base">Base URL</label>
+              <input id="llm-base" name="baseUrl" placeholder="https://api.stepfun.ai/step_plan" required /></div>
+            <div class="llm-field llm-field-wide"><label for="llm-key">API key</label>
+              <input id="llm-key" name="apiKey" type="password" autocomplete="off" required /></div>
+            <div class="llm-field llm-field-wide"><label for="llm-models">Models (comma separated)</label>
+              <input id="llm-models" name="models" placeholder="step-3.7-flash, step-3.5-flash" /></div>
+            <button type="submit" class="run-button">Add provider</button>
+          </form>
+          <div id="llm-provider-list" class="llm-provider-list"></div>
+        </div>
+
+        <div class="llm-config-col">
+          <h3>Task routing</h3>
+          <p class="llm-hint">Each task tries its models top to bottom, falling through on failure. Empty means the built-in env chain is used.</p>
+          <div id="llm-routes"></div>
+        </div>
+      </div>
+    </section>
+
     <section class="summary-grid" aria-label="Crawler summary">
       <div class="metric"><span>Active jobs</span><strong id="metric-active">0</strong></div>
       <div class="metric"><span>Worker processes</span><strong id="metric-processes">0</strong></div>

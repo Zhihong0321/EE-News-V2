@@ -411,6 +411,7 @@ loginForm.addEventListener('submit', async (event) => {
     loginForm.reset();
     showDashboard();
     await refreshDashboard();
+    await loadLlmConfig();
   } catch (error) {
     loginError.textContent = error.message;
   } finally {
@@ -526,12 +527,234 @@ if (fixCorruptedButton) {
   });
 }
 
+// ---------------------------------------------------------------------------
+// LLM control plane: providers, models, and the ordered fallback chain per task.
+//
+// Deliberately NOT part of refreshDashboard's 2s poll — re-rendering this while
+// the operator is typing a key or reordering a chain would wipe their input.
+// It loads on boot and re-loads only after a write.
+// ---------------------------------------------------------------------------
+const llmConfigState = document.getElementById('llm-config-state');
+const llmProviderForm = document.getElementById('llm-provider-form');
+const llmProviderList = document.getElementById('llm-provider-list');
+const llmRoutesElement = document.getElementById('llm-routes');
+
+let llmConfig = { enabled: false, tasks: [], providers: [], routes: {} };
+
+/** Flat list of every enabled model, used to populate the chain pickers. */
+function modelOptions() {
+  const out = [];
+  for (const provider of llmConfig.providers) {
+    if (!provider.enabled) continue;
+    for (const model of provider.models) {
+      if (!model.enabled) continue;
+      out.push({ id: model.id, text: `${provider.name} / ${model.model}`, apiStyle: provider.apiStyle });
+    }
+  }
+  return out;
+}
+
+function renderLlmProviders() {
+  if (!llmConfig.providers.length) {
+    llmProviderList.innerHTML = '<div class="empty-state">No providers configured — the built-in env chains are in use.</div>';
+    return;
+  }
+  llmProviderList.innerHTML = llmConfig.providers.map((provider) => {
+    const models = provider.models.length
+      ? provider.models.map((model) => `
+          <li>
+            <code>${escapeHtml(model.model)}</code>
+            <button type="button" class="link-button" data-llm-test="${provider.id}" data-model="${escapeHtml(model.model)}">test</button>
+            <button type="button" class="link-button danger" data-llm-del-model="${model.id}">remove</button>
+          </li>`).join('')
+      : '<li class="muted">no models yet</li>';
+    return `
+      <article class="llm-cfg-card${provider.enabled ? '' : ' disabled'}">
+        <header>
+          <strong>${escapeHtml(provider.name)}</strong>
+          <span class="pill">${escapeHtml(provider.apiStyle)}</span>
+          <button type="button" class="link-button" data-llm-toggle="${provider.id}" data-enabled="${provider.enabled}">${provider.enabled ? 'disable' : 'enable'}</button>
+          <button type="button" class="link-button danger" data-llm-del-provider="${provider.id}">delete</button>
+        </header>
+        <div class="llm-cfg-meta">
+          <span>${escapeHtml(provider.baseUrl)}</span>
+          <span class="muted">key ${escapeHtml(provider.apiKeyMasked)}</span>
+        </div>
+        <ul class="llm-model-list">${models}</ul>
+        <form class="llm-add-model" data-llm-add-model="${provider.id}">
+          <input name="model" placeholder="model id" required />
+          <button type="submit" class="link-button">add model</button>
+        </form>
+      </article>`;
+  }).join('');
+}
+
+function renderLlmRoutes() {
+  const options = modelOptions();
+  llmRoutesElement.innerHTML = llmConfig.tasks.map((task) => {
+    const chain = llmConfig.routes[task] || [];
+    // One row per chain position, plus a trailing empty row to append with.
+    const rows = [...chain.map((entry) => entry.modelId), null].map((selected, index) => {
+      const opts = ['<option value="">— none —</option>']
+        .concat(options.map((option) =>
+          `<option value="${option.id}"${option.id === selected ? ' selected' : ''}>${escapeHtml(option.text)}</option>`));
+      // Enrichment streams SSE against the Anthropic messages shape, so an
+      // openai-style entry there is skipped at runtime. Say so up front.
+      const chosen = options.find((option) => option.id === selected);
+      const warn = task === 'enrich' && chosen && chosen.apiStyle !== 'anthropic'
+        ? '<span class="llm-warn" title="Enrichment requires an Anthropic-style endpoint; this entry is skipped at runtime.">unsupported for enrich</span>'
+        : '';
+      return `<div class="llm-route-row"><span class="llm-route-index">${index + 1}</span>
+        <select data-llm-route="${task}" data-index="${index}">${opts.join('')}</select>${warn}</div>`;
+    }).join('');
+    return `<div class="llm-route-task"><h4>${escapeHtml(task)}</h4>${rows}
+      <button type="button" class="run-button" data-llm-save-route="${task}">Save ${escapeHtml(task)} chain</button></div>`;
+  }).join('');
+}
+
+/** Read the current chain straight off the DOM selects, in display order. */
+function chainFromDom(task) {
+  return [...llmRoutesElement.querySelectorAll(`select[data-llm-route="${task}"]`)]
+    .map((select) => Number(select.value))
+    .filter(Boolean)
+    .map((modelId) => ({ modelId, enabled: true }));
+}
+
+async function loadLlmConfig() {
+  try {
+    const data = await api('/api/factory/llm');
+    llmConfig = data;
+    llmConfigState.textContent = data.enabled ? `${data.providers.length} provider(s)` : (data.error || 'database required');
+    if (!data.enabled) {
+      llmProviderList.innerHTML = `<div class="empty-state">${escapeHtml(data.error || 'Database required')}</div>`;
+      llmRoutesElement.innerHTML = '';
+      return;
+    }
+    renderLlmProviders();
+    renderLlmRoutes();
+  } catch (error) {
+    llmConfigState.textContent = 'error';
+    console.error(error);
+  }
+}
+
+llmProviderForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const form = new FormData(llmProviderForm);
+  const models = String(form.get('models') || '').split(',').map((m) => m.trim()).filter(Boolean);
+  try {
+    await api('/api/factory/llm/providers', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        name: form.get('name'),
+        apiStyle: form.get('apiStyle'),
+        baseUrl: form.get('baseUrl'),
+        apiKey: form.get('apiKey'),
+        models
+      })
+    });
+    llmProviderForm.reset();
+    toast('Provider added');
+    await loadLlmConfig();
+  } catch (error) {
+    toast(error.message, true);
+  }
+});
+
+llmProviderList.addEventListener('submit', async (event) => {
+  const providerId = event.target.dataset?.llmAddModel;
+  if (!providerId) return;
+  event.preventDefault();
+  const model = new FormData(event.target).get('model');
+  try {
+    await api(`/api/factory/llm/providers/${providerId}/models`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ model })
+    });
+    toast('Model added');
+    await loadLlmConfig();
+  } catch (error) {
+    toast(error.message, true);
+  }
+});
+
+llmProviderList.addEventListener('click', async (event) => {
+  const button = event.target.closest('button');
+  if (!button) return;
+  const { llmTest, llmDelModel, llmDelProvider, llmToggle } = button.dataset;
+  try {
+    if (llmTest) {
+      button.disabled = true;
+      button.textContent = 'testing...';
+      const result = await api('/api/factory/llm/test', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ providerId: Number(llmTest), model: button.dataset.model })
+      });
+      button.disabled = false;
+      button.textContent = 'test';
+      toast(result.ok ? `OK in ${result.latencyMs}ms — "${result.reply}"` : `Failed: ${result.error}`, !result.ok);
+      return;
+    }
+    if (llmDelModel) {
+      await api(`/api/factory/llm/models/${llmDelModel}`, { method: 'DELETE' });
+      toast('Model removed');
+    } else if (llmDelProvider) {
+      if (!confirm('Delete this provider, its models, and any task routes using them?')) return;
+      await api(`/api/factory/llm/providers/${llmDelProvider}`, { method: 'DELETE' });
+      toast('Provider deleted');
+    } else if (llmToggle) {
+      await api(`/api/factory/llm/providers/${llmToggle}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ enabled: button.dataset.enabled !== 'true' })
+      });
+      toast('Provider updated');
+    } else {
+      return;
+    }
+    await loadLlmConfig();
+  } catch (error) {
+    button.disabled = false;
+    toast(error.message, true);
+  }
+});
+
+llmRoutesElement.addEventListener('change', (event) => {
+  // Re-render so choosing a model in the trailing row grows a new empty row and
+  // the enrich-compatibility warning updates immediately.
+  const task = event.target.dataset?.llmRoute;
+  if (!task) return;
+  llmConfig.routes[task] = chainFromDom(task);
+  renderLlmRoutes();
+});
+
+llmRoutesElement.addEventListener('click', async (event) => {
+  const task = event.target.closest('button')?.dataset?.llmSaveRoute;
+  if (!task) return;
+  const entries = chainFromDom(task);
+  try {
+    await api(`/api/factory/llm/routes/${task}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ entries })
+    });
+    toast(entries.length ? `${task}: ${entries.length} model(s) in chain` : `${task}: cleared — built-in chain will be used`);
+    await loadLlmConfig();
+  } catch (error) {
+    toast(error.message, true);
+  }
+});
+
 (async function boot() {
   try {
     const session = await api('/api/factory/session');
     if (!session.authenticated) return showLogin();
     showDashboard();
     await refreshDashboard();
+    await loadLlmConfig();
   } catch {
     showLogin();
   }

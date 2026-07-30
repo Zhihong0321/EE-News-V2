@@ -15,8 +15,14 @@
 // Legacy single-provider config (ANTHROPIC_BASE_URL / ANTHROPIC_AUTH_TOKEN /
 // ANTHROPIC_MODEL, or explicit options.baseUrl/authToken) still works and is
 // used as a final fallback when no DISTILL_* token is set.
+//
+// FACTORY OVERRIDE: when the factory's LLM control plane has a chain configured
+// for the 'distill' task, that chain wins and the DISTILL_*/ANTHROPIC_* chain
+// below is not consulted. With nothing configured (or no database) the built-in
+// chain is used unchanged, so this file still works standalone.
 import { loadEnv } from '../config/env.js';
 import { report } from './llm-health.js';
+import { chainFor, buildRequest, extractText } from './llm-registry.js';
 
 loadEnv();
 
@@ -98,22 +104,20 @@ async function callProvider(provider, prompt, { fetchImpl, timeoutMs, maxWords }
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const startedAt = Date.now();
+  // A 30-word gist plus the reasoning/thinking block some models emit by
+  // default must both fit in max_tokens; 128 starved the answer (fix plan
+  // P0-B.1) and 512 still starves it for heavier reasoners — measured: StepFun
+  // step-3.7-flash spends ~700 tokens thinking before emitting the gist, and
+  // returns a thinking-only (empty-answer) response at 512. Now that operators
+  // can point any model at this task from the factory, budget for the slowest.
+  // buildRequest also picks the anthropic vs openai request shape.
+  const request = buildRequest(provider, prompt, { maxTokens: 2048 });
   let response;
   try {
-    response = await fetchImpl(`${provider.baseUrl}/v1/messages`, {
+    response = await fetchImpl(request.url, {
       method: 'POST',
-      headers: {
-        'x-api-key': provider.token,
-        'anthropic-version': '2023-06-01',
-        'content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        model: provider.model,
-        // A 30-word gist plus the MiMo `thinking` block it emits by default
-        // must both fit here; 128 starved the answer. See fix plan P0-B.1.
-        max_tokens: 512,
-        messages: [{ role: 'user', content: prompt }]
-      }),
+      headers: request.headers,
+      body: JSON.stringify(request.body),
       signal: controller.signal
     });
   } catch (error) {
@@ -137,11 +141,9 @@ async function callProvider(provider, prompt, { fetchImpl, timeoutMs, maxWords }
     throw error;
   }
   const payload = await response.json();
-  // MiMo returns a `thinking` block alongside the answer; keep only `text`.
-  const text = (payload.content || [])
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text || '')
-    .join('\n');
+  // Some models return a `thinking`/`reasoning` block alongside the answer;
+  // extractText keeps only the answer, for either request shape.
+  const text = extractText(payload, provider.apiStyle);
   const gist = clampWords(text, maxWords);
   if (!gist) {
     const error = new Error('Distillation model returned an empty gist');
@@ -160,7 +162,10 @@ async function callProvider(provider, prompt, { fetchImpl, timeoutMs, maxWords }
  * error), and the caller decides whether to fall back to null.
  */
 export async function generateDigest(article, options = {}) {
-  const providers = resolveProviders(options);
+  // Factory-configured chain wins; an explicit options.baseUrl/authToken (tests)
+  // still forces a single provider and bypasses both.
+  const configured = (options.authToken || options.baseUrl) ? [] : await chainFor('distill');
+  const providers = configured.length ? configured : resolveProviders(options);
   const fetchImpl = options.fetchImpl || fetch;
   const timeoutMs = options.timeoutMs || 30000;
   const maxWords = options.maxWords || 30;

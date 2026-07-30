@@ -4,8 +4,13 @@
 //   ANTHROPIC_BASE_URL   e.g. https://cavoti.com/  (or https://api.anthropic.com)
 //   ANTHROPIC_AUTH_TOKEN e.g. sk-...               (sent as x-api-key)
 //   ANTHROPIC_MODEL      e.g. claude-sonnet-5      (overridable per call)
+//
+// FACTORY OVERRIDE: when the factory's LLM control plane has a chain configured
+// for the 'tag' task, that chain replaces DEFAULT_PROVIDERS below. With nothing
+// configured (or no database) the built-in pool is used unchanged.
 import { loadEnv } from '../config/env.js';
 import { report } from './llm-health.js';
+import { chainFor, buildRequest, extractText } from './llm-registry.js';
 
 loadEnv();
 
@@ -102,7 +107,8 @@ function normalizeCountry(raw) {
  * Returns { tags: string[], country: string | null }.
  */
 export async function generateTagsAndCountry(article, options = {}) {
-  const pool = getProviderPool(options);
+  const configured = (options.baseUrl || options.authToken) ? [] : await chainFor('tag');
+  const pool = configured.length ? configured : getProviderPool(options);
   const fetchImpl = options.fetchImpl || fetch;
   const timeoutMs = options.timeoutMs || 30000;
   const maxTags = options.maxTags || 8;
@@ -129,26 +135,19 @@ export async function generateTagsAndCountry(article, options = {}) {
 
   for (let i = 0; i < pool.length; i += 1) {
     const cred = pool[(startIndex + i) % pool.length];
-    const baseUrl = cred.baseUrl;
-    const token = cred.token;
     const model = options.model || cred.model || 'gpt-5.6-luna';
+    // 2048, not 512: reasoning models spend most of a small budget thinking and
+    // return an empty answer. See the same note in distill.js.
+    const request = buildRequest({ ...cred, model }, prompt, { maxTokens: 2048 });
 
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), timeoutMs);
     const startedAt = Date.now();
     try {
-      const response = await fetchImpl(`${baseUrl}/v1/messages`, {
+      const response = await fetchImpl(request.url, {
         method: 'POST',
-        headers: {
-          'x-api-key': token,
-          'anthropic-version': '2023-06-01',
-          'content-type': 'application/json'
-        },
-        body: JSON.stringify({
-          model,
-          max_tokens: 512,
-          messages: [{ role: 'user', content: prompt }]
-        }),
+        headers: request.headers,
+        body: JSON.stringify(request.body),
         signal: controller.signal
       });
 
@@ -160,11 +159,7 @@ export async function generateTagsAndCountry(article, options = {}) {
         throw new Error(`Tagging provider ${cred.name} returned HTTP ${response.status}: ${message}`);
       }
       const payload = await response.json();
-      const text = (payload.content || [])
-        .filter((block) => block.type === 'text')
-        .map((block) => block.text || '')
-        .join('\n');
-      const parsed = tryParseMetadataJson(text);
+      const parsed = tryParseMetadataJson(extractText(payload, cred.apiStyle));
       if (!parsed) {
         throw new Error(`Tagging model ${cred.name} did not return valid metadata JSON`);
       }
