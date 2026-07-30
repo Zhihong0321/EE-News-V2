@@ -9,7 +9,8 @@ import { listCustomAdapters, getCustomAdapter, saveCustomConfig, validateNewSite
 import { runSite } from './core/runner.js';
 import { runPipeline } from './core/pipeline.js';
 import { listCrawlJobs, summarizeCrawlJobs } from './core/factory-status.js';
-import { getPipelineDashboard, isDbEnabled } from './db/store.js';
+import { getPipelineDashboard, isDbEnabled, getExistingArticleUrls, persistArticles, recordStageStatus } from './db/store.js';
+import { databaseUrl, query as dbQuery } from './db/pool.js';
 import { retryFailedStages, retryableStages } from './core/retry-pipeline.js';
 import { snapshot as llmHealthSnapshot } from './core/llm-health.js';
 import {
@@ -37,6 +38,14 @@ const PORT = Number(process.env.PORT) || 5177;
 const FACTORY_PASSWORD = process.env.FACTORY_PASSWORD || '';
 if (!FACTORY_PASSWORD) {
   console.warn('\n  WARNING: FACTORY_PASSWORD is not set. The factory dashboard is LOCKED — no password will be accepted.\n  Set FACTORY_PASSWORD in your environment to enable operator access.\n');
+}
+// Machine-to-machine key for /api/hub/* — lets a fetcher running off-Railway
+// (e.g. a local machine) write through this server instead of holding a
+// direct Postgres connection, so Postgres reads/writes stay on Railway's free
+// private network and only small JSON payloads cross the public internet.
+const HUB_API_KEY = process.env.HUB_API_KEY || '';
+if (!HUB_API_KEY) {
+  console.warn('\n  WARNING: HUB_API_KEY is not set. The /api/hub/* endpoints are LOCKED — no key will be accepted.\n  Set HUB_API_KEY in your environment to let a remote fetcher write through this hub.\n');
 }
 // Upper bound for `since` backfills. Big enough for real multi-day pulls,
 // bounded so a backfill can never run forever (was `Infinity`). Configurable
@@ -123,6 +132,13 @@ function passwordMatches(candidate) {
   if (!FACTORY_PASSWORD) return false;
   const expected = crypto.createHash('sha256').update(FACTORY_PASSWORD).digest();
   const actual = crypto.createHash('sha256').update(String(candidate || '')).digest();
+  return crypto.timingSafeEqual(expected, actual);
+}
+
+function isHubAuthenticated(req) {
+  if (!HUB_API_KEY) return false;
+  const expected = crypto.createHash('sha256').update(HUB_API_KEY).digest();
+  const actual = crypto.createHash('sha256').update(String(req.headers['x-hub-key'] || '')).digest();
   return crypto.timingSafeEqual(expected, actual);
 }
 
@@ -401,6 +417,79 @@ const server = http.createServer(async (req, res) => {
   const { pathname } = url;
 
   try {
+    // Hub API: write-through for a fetcher running off Railway. Mirrors
+    // db/store.js's function signatures 1:1 so hub-client.js is a drop-in
+    // swap for a direct DATABASE_URL — see db/runner-backend.js.
+    if (pathname.startsWith('/api/hub/') && !isHubAuthenticated(req)) {
+      return sendJson(res, 401, { ok: false, error: 'Hub authentication required' });
+    }
+
+    if (pathname === '/api/hub/existing-urls' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      const urls = Array.isArray(body.urls) ? body.urls : [];
+      const existing = await getExistingArticleUrls(urls);
+      return sendJson(res, 200, { ok: true, existing: [...existing] });
+    }
+
+    if (pathname === '/api/hub/persist-articles' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      const articles = Array.isArray(body.articles) ? body.articles : [];
+      const idsByUrl = await persistArticles(articles);
+      return sendJson(res, 200, { ok: true, ids: [...idsByUrl.entries()] });
+    }
+
+    if (pathname === '/api/hub/stage-status' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      await recordStageStatus(body.articleId, body.stage, body.status, body.error ?? null);
+      return sendJson(res, 200, { ok: true });
+    }
+
+    // Read-only health probe for confirming a deploy is wired correctly:
+    // real DB ping (not just "DATABASE_URL is set"), whether that connection
+    // is Railway's free private network vs a metered public one, and current
+    // pipeline stage counts. Meant to be curled from wherever you're
+    // debugging from, not browsed.
+    if (pathname === '/api/hub/debug/status' && req.method === 'GET') {
+      const dbUrl = databaseUrl();
+      let dbConnected = false;
+      let dbError = null;
+      if (dbUrl) {
+        try {
+          await dbQuery('select 1');
+          dbConnected = true;
+        } catch (error) {
+          dbError = error.message;
+        }
+      }
+      let dbHost = null;
+      let dbPrivate = null;
+      if (dbUrl) {
+        try {
+          dbHost = new URL(dbUrl).hostname;
+          dbPrivate = /\.railway\.internal$/i.test(dbHost);
+        } catch {
+          // malformed connection string — leave host/private as null
+        }
+      }
+      const dashboard = await getPipelineDashboard({ limit: 1 });
+      return sendJson(res, 200, {
+        ok: true,
+        db: {
+          configured: Boolean(dbUrl),
+          connected: dbConnected,
+          error: dbError,
+          host: dbHost,
+          private: dbPrivate
+        },
+        pipeline: { counts: dashboard.counts },
+        process: {
+          pid: process.pid,
+          uptimeSeconds: Math.round(process.uptime()),
+          nodeVersion: process.version
+        }
+      });
+    }
+
     if (pathname === '/api/factory/session' && req.method === 'GET') {
       return sendJson(res, 200, { authenticated: isFactoryAuthenticated(req) });
     }
@@ -858,6 +947,8 @@ const server = http.createServer(async (req, res) => {
     sendJson(res, 500, { ok: false, error: error.message });
   }
 });
+
+export { server };
 
 // Only listen when run directly (`node src/server.js`), not when imported by a
 // test that exercises exported helpers like listPublishedArticles.

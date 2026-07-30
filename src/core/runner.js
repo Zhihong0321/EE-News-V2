@@ -4,7 +4,7 @@ import { chromium } from 'playwright';
 import { crawlPolicy, isRetryable, isHardStop } from '../config/crawl-policy.js';
 import { runtimeConfig } from '../config/runtime.js';
 import { checkRobotsTxt } from './robots.js';
-import { persistArticles, isDbEnabled, getExistingArticleUrls, recordStageStatus } from '../db/store.js';
+import { persistArticles, isDbEnabled, getExistingArticleUrls, recordStageStatus } from '../db/runner-backend.js';
 import { createCrawlJob } from './factory-status.js';
 
 function sleep(milliseconds) {
