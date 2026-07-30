@@ -496,6 +496,7 @@ const llmProviderList = document.getElementById('llm-provider-list');
 const llmRoutesElement = document.getElementById('llm-routes');
 
 let llmConfig = { enabled: false, tasks: [], providers: [], routes: {} };
+let editingProviderId = null;
 
 /** Flat list of every enabled model, used to populate the chain pickers. */
 function modelOptions() {
@@ -524,11 +525,34 @@ function renderLlmProviders() {
             <button type="button" class="link-button danger" data-llm-del-model="${model.id}">remove</button>
           </li>`).join('')
       : '<li class="muted">no models yet</li>';
+
+    if (provider.id === editingProviderId) {
+      return `
+        <article class="llm-cfg-card">
+          <form class="llm-provider-form" data-llm-edit-form="${provider.id}">
+            <div class="llm-field"><label>Name</label>
+              <input name="name" value="${escapeHtml(provider.name)}" required /></div>
+            <div class="llm-field"><label>API style</label>
+              <select name="apiStyle">
+                <option value="anthropic"${provider.apiStyle === 'anthropic' ? ' selected' : ''}>anthropic — /v1/messages</option>
+                <option value="openai"${provider.apiStyle === 'openai' ? ' selected' : ''}>openai — /v1/chat/completions</option>
+              </select></div>
+            <div class="llm-field llm-field-wide"><label>Base URL</label>
+              <input name="baseUrl" value="${escapeHtml(provider.baseUrl)}" required /></div>
+            <div class="llm-field llm-field-wide"><label>API key</label>
+              <input name="apiKey" type="password" autocomplete="off" placeholder="leave blank to keep current key" /></div>
+            <button type="submit" class="run-button">Save changes</button>
+            <button type="button" class="link-button" data-llm-cancel-edit>cancel</button>
+          </form>
+        </article>`;
+    }
+
     return `
       <article class="llm-cfg-card${provider.enabled ? '' : ' disabled'}">
         <header>
           <strong>${escapeHtml(provider.name)}</strong>
           <span class="pill">${escapeHtml(provider.apiStyle)}</span>
+          <button type="button" class="link-button" data-llm-edit="${provider.id}">edit</button>
           <button type="button" class="link-button" data-llm-toggle="${provider.id}" data-enabled="${provider.enabled}">${provider.enabled ? 'disable' : 'enable'}</button>
           <button type="button" class="link-button danger" data-llm-del-provider="${provider.id}">delete</button>
         </header>
@@ -619,6 +643,32 @@ llmProviderForm.addEventListener('submit', async (event) => {
 });
 
 llmProviderList.addEventListener('submit', async (event) => {
+  const editProviderId = event.target.dataset?.llmEditForm;
+  if (editProviderId) {
+    event.preventDefault();
+    const form = new FormData(event.target);
+    const apiKey = String(form.get('apiKey') || '').trim();
+    const patch = {
+      name: form.get('name'),
+      apiStyle: form.get('apiStyle'),
+      baseUrl: form.get('baseUrl')
+    };
+    if (apiKey) patch.apiKey = apiKey; // blank means "keep the existing key"
+    try {
+      await api(`/api/factory/llm/providers/${editProviderId}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(patch)
+      });
+      editingProviderId = null;
+      toast('Provider updated');
+      await loadLlmConfig();
+    } catch (error) {
+      toast(error.message, true);
+    }
+    return;
+  }
+
   const providerId = event.target.dataset?.llmAddModel;
   if (!providerId) return;
   event.preventDefault();
@@ -639,7 +689,17 @@ llmProviderList.addEventListener('submit', async (event) => {
 llmProviderList.addEventListener('click', async (event) => {
   const button = event.target.closest('button');
   if (!button) return;
-  const { llmTest, llmDelModel, llmDelProvider, llmToggle } = button.dataset;
+  const { llmTest, llmDelModel, llmDelProvider, llmToggle, llmEdit, llmCancelEdit } = button.dataset;
+  if (llmEdit !== undefined) {
+    editingProviderId = Number(llmEdit);
+    renderLlmProviders();
+    return;
+  }
+  if (llmCancelEdit !== undefined) {
+    editingProviderId = null;
+    renderLlmProviders();
+    return;
+  }
   try {
     if (llmTest) {
       button.disabled = true;
