@@ -1,7 +1,4 @@
-const loginView = document.getElementById('login-view');
 const dashboard = document.getElementById('dashboard');
-const loginForm = document.getElementById('login-form');
-const loginError = document.getElementById('login-error');
 const activeJobsElement = document.getElementById('active-jobs');
 const sourceListElement = document.getElementById('source-list');
 const historyBody = document.getElementById('history-body');
@@ -41,25 +38,11 @@ function toast(message, isError = false) {
 async function api(path, options) {
   const response = await fetch(path, options);
   const data = await response.json().catch(() => ({}));
-  if (response.status === 401 && path !== '/api/factory/login') {
-    showLogin();
-    throw new Error('Factory session expired');
-  }
   if (!response.ok || data.ok === false) throw new Error(data.error || `Request failed (${response.status})`);
   return data;
 }
 
-function showLogin() {
-  clearInterval(pollTimer);
-  pollTimer = null;
-  dashboard.hidden = true;
-  loginView.hidden = false;
-  document.getElementById('factory-password').focus();
-}
-
 function showDashboard() {
-  loginView.hidden = true;
-  dashboard.hidden = false;
   if (!pollTimer) pollTimer = setInterval(refreshDashboard, 2000);
 }
 
@@ -397,33 +380,6 @@ async function refreshDashboard() {
   }
 }
 
-loginForm.addEventListener('submit', async (event) => {
-  event.preventDefault();
-  loginError.textContent = '';
-  const button = loginForm.querySelector('button');
-  button.disabled = true;
-  try {
-    await api('/api/factory/login', {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ password: new FormData(loginForm).get('password') })
-    });
-    loginForm.reset();
-    showDashboard();
-    await refreshDashboard();
-    await loadLlmConfig();
-  } catch (error) {
-    loginError.textContent = error.message;
-  } finally {
-    button.disabled = false;
-  }
-});
-
-document.getElementById('logout-button').addEventListener('click', async () => {
-  await api('/api/factory/logout', { method: 'POST' }).catch(() => {});
-  showLogin();
-});
-
 document.getElementById('refresh-button').addEventListener('click', refreshDashboard);
 
 sourceListElement.addEventListener('click', async (event) => {
@@ -749,13 +705,7 @@ llmRoutesElement.addEventListener('click', async (event) => {
 });
 
 (async function boot() {
-  try {
-    const session = await api('/api/factory/session');
-    if (!session.authenticated) return showLogin();
-    showDashboard();
-    await refreshDashboard();
-    await loadLlmConfig();
-  } catch {
-    showLogin();
-  }
+  showDashboard();
+  await refreshDashboard();
+  await loadLlmConfig();
 })();

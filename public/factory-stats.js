@@ -22,10 +22,6 @@ function toast(message, isError = false) {
 async function api(path) {
   const response = await fetch(path);
   const data = await response.json().catch(() => ({}));
-  if (response.status === 401) {
-    window.location.href = '/factory';
-    throw new Error('Factory session expired');
-  }
   if (!response.ok || data.ok === false) throw new Error(data.error || `Request failed (${response.status})`);
   return data;
 }

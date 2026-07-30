@@ -35,10 +35,6 @@ const PUBLIC_DIR = path.resolve(__dirname, '../public');
 const OUTPUT_DIR = path.resolve(process.cwd(), 'output');
 const EDITORIAL_OUTPUT_DIR = path.resolve(process.cwd(), 'editorial-pipeline/output');
 const PORT = Number(process.env.PORT) || 5177;
-const FACTORY_PASSWORD = process.env.FACTORY_PASSWORD || '';
-if (!FACTORY_PASSWORD) {
-  console.warn('\n  WARNING: FACTORY_PASSWORD is not set. The factory dashboard is LOCKED — no password will be accepted.\n  Set FACTORY_PASSWORD in your environment to enable operator access.\n');
-}
 // Machine-to-machine key for /api/hub/* — lets a fetcher running off-Railway
 // (e.g. a local machine) write through this server instead of holding a
 // direct Postgres connection, so Postgres reads/writes stay on Railway's free
@@ -52,8 +48,6 @@ if (!HUB_API_KEY) {
 // via BACKFILL_MAX; see .env.example.
 const BACKFILL_MAX = Number(process.env.BACKFILL_MAX) > 0 ? Number(process.env.BACKFILL_MAX) : 300;
 const PUBLISHED_CACHE_MS = 5000;
-const FACTORY_COOKIE = 'factory_session';
-const FACTORY_SESSION = crypto.randomBytes(32).toString('hex');
 const OUTPUT_FILE_PATTERN = /^([a-z0-9-]+)-(\d{4}-\d{2}-\d{2})\.json$/;
 const INFOGRAPHIC_PACKET_PATTERN = /^infographic_(.+)\.json$/;
 const SINCE_DATE_PATTERN = /^\d{4}-\d{2}-\d{2}$/;
@@ -128,43 +122,11 @@ async function readJsonBody(req) {
   }
 }
 
-function passwordMatches(candidate) {
-  if (!FACTORY_PASSWORD) return false;
-  const expected = crypto.createHash('sha256').update(FACTORY_PASSWORD).digest();
-  const actual = crypto.createHash('sha256').update(String(candidate || '')).digest();
-  return crypto.timingSafeEqual(expected, actual);
-}
-
 function isHubAuthenticated(req) {
   if (!HUB_API_KEY) return false;
   const expected = crypto.createHash('sha256').update(HUB_API_KEY).digest();
   const actual = crypto.createHash('sha256').update(String(req.headers['x-hub-key'] || '')).digest();
   return crypto.timingSafeEqual(expected, actual);
-}
-
-function requestCookies(req) {
-  return Object.fromEntries(
-    String(req.headers.cookie || '')
-      .split(';')
-      .map((part) => part.trim())
-      .filter(Boolean)
-      .map((part) => {
-        const index = part.indexOf('=');
-        return index < 0 ? [part, ''] : [part.slice(0, index), decodeURIComponent(part.slice(index + 1))];
-      })
-  );
-}
-
-function isFactoryAuthenticated(req) {
-  const candidate = requestCookies(req)[FACTORY_COOKIE] || '';
-  const expected = Buffer.from(FACTORY_SESSION);
-  const actual = Buffer.from(candidate);
-  return actual.length === expected.length && crypto.timingSafeEqual(actual, expected);
-}
-
-function factoryCookie(req, value, maxAge) {
-  const secure = req.socket.encrypted || req.headers['x-forwarded-proto'] === 'https';
-  return `${FACTORY_COOKIE}=${encodeURIComponent(value)}; Path=/; HttpOnly; SameSite=Strict; Max-Age=${maxAge}${secure ? '; Secure' : ''}`;
 }
 
 async function listOutputFiles() {
@@ -488,30 +450,6 @@ const server = http.createServer(async (req, res) => {
           nodeVersion: process.version
         }
       });
-    }
-
-    if (pathname === '/api/factory/session' && req.method === 'GET') {
-      return sendJson(res, 200, { authenticated: isFactoryAuthenticated(req) });
-    }
-
-    if (pathname === '/api/factory/login' && req.method === 'POST') {
-      const body = await readJsonBody(req);
-      if (!passwordMatches(body.password)) {
-        return sendJson(res, 401, { ok: false, error: 'Invalid factory password' });
-      }
-      return sendJson(res, 200, { ok: true }, {
-        'set-cookie': factoryCookie(req, FACTORY_SESSION, 12 * 60 * 60)
-      });
-    }
-
-    if (pathname === '/api/factory/logout' && req.method === 'POST') {
-      return sendJson(res, 200, { ok: true }, {
-        'set-cookie': factoryCookie(req, '', 0)
-      });
-    }
-
-    if (pathname.startsWith('/api/factory/') && !isFactoryAuthenticated(req)) {
-      return sendJson(res, 401, { ok: false, error: 'Factory authentication required' });
     }
 
     if (pathname === '/api/factory/status' && req.method === 'GET') {
@@ -900,11 +838,6 @@ const server = http.createServer(async (req, res) => {
 
     const fetchMatch = pathname.match(/^\/api\/sites\/([a-z0-9-]+)\/fetch$/);
     if (fetchMatch && req.method === 'POST') {
-      // Same trigger as /api/factory/sites/:id/fetch — must sit behind the same
-      // factory session so it can't be hammered anonymously.
-      if (!isFactoryAuthenticated(req)) {
-        return sendJson(res, 401, { ok: false, error: 'Factory authentication required' });
-      }
       const id = fetchMatch[1];
       if (fetchLocks.has(id)) return sendJson(res, 409, { ok: false, error: `A fetch for "${id}" is already running` });
       const adapter = await resolveAdapter(id);

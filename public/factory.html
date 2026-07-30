@@ -10,19 +10,7 @@
 <link rel="stylesheet" href="/factory.css" />
 </head>
 <body>
-<section class="login-view" id="login-view">
-  <form class="login-panel" id="login-form">
-    <div class="factory-mark"><span class="signal-dot"></span> WIRE FACTORY</div>
-    <h1>Operations access</h1>
-    <label for="factory-password">Password</label>
-    <input id="factory-password" name="password" type="password" autocomplete="current-password" autofocus required />
-    <button type="submit">Enter factory</button>
-    <p class="login-error" id="login-error" role="alert"></p>
-    <a href="/">Return to news portal</a>
-  </form>
-</section>
-
-<div class="dashboard" id="dashboard" hidden>
+<div class="dashboard" id="dashboard">
   <header class="topbar">
     <div>
       <div class="factory-mark"><span class="signal-dot"></span> WIRE FACTORY</div>
@@ -33,7 +21,6 @@
       <a class="icon-link" href="/factory/stats" title="Fetch stats" aria-label="Fetch stats">&#128202;</a>
       <a class="icon-link" href="/" title="Open news portal" aria-label="Open news portal">&#8599;</a>
       <button class="icon-button" id="refresh-button" title="Refresh dashboard" aria-label="Refresh dashboard">&#8635;</button>
-      <button class="logout-button" id="logout-button">Sign out</button>
     </div>
   </header>
 

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 
 // Must be set before server.js is imported — it reads HUB_API_KEY once at
-// module load, same as FACTORY_PASSWORD.
+// module load.
 process.env.HUB_API_KEY = 'test-hub-key';
 
 const { server } = await import('../src/server.js');
@@ -92,10 +92,12 @@ test('debug/status requires a valid hub key', async () => {
   });
 });
 
-test('the factory routes are unaffected by the hub key gate', async () => {
+test('the factory routes are unaffected by the hub key gate (no auth of their own)', async () => {
   await withListeningServer(async (base) => {
-    const response = await fetch(`${base}/api/factory/session`);
+    const response = await fetch(`${base}/api/factory/status`);
     assert.equal(response.status, 200);
-    assert.deepEqual(await response.json(), { authenticated: false });
+    const body = await response.json();
+    assert.equal(body.ok, true);
+    assert.ok(Array.isArray(body.jobs));
   });
 });
