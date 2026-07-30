@@ -1,5 +1,8 @@
 node_modules/
 output/
+# Separate repo (Zhihong0321/eter.news), cloned locally as a working copy —
+# not part of this repo's history.
+eter-my-portal/
 editorial-pipeline/output/
 *.log
 .legion/

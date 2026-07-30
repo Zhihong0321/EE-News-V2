@@ -660,6 +660,35 @@ const server = http.createServer(async (req, res) => {
     // Providers + models + per-task fallback chains, all DB-backed. Every write
     // invalidates the routing cache so a running crawl picks up the change on
     // its next article rather than after a restart.
+    //
+    // When HUB_URL is set, this whole subtree is forwarded verbatim to the
+    // Hub's /api/hub/llm/* routes instead of touching a local DATABASE_URL —
+    // this machine then never even sees a plaintext provider API key.
+    if (pathname.startsWith('/api/factory/llm') && process.env.HUB_URL) {
+      const hubBase = process.env.HUB_URL.replace(/\/+$/, '');
+      const targetPath = pathname.replace('/api/factory/llm', '/api/hub/llm');
+      const hasBody = !['GET', 'HEAD'].includes(req.method);
+      let bodyText;
+      if (hasBody) {
+        const parsed = await readJsonBody(req).catch(() => ({}));
+        bodyText = JSON.stringify(parsed);
+      }
+      try {
+        const hubResponse = await fetch(`${hubBase}${targetPath}${url.search}`, {
+          method: req.method,
+          headers: {
+            'content-type': 'application/json',
+            'x-hub-key': process.env.HUB_API_KEY || ''
+          },
+          body: bodyText
+        });
+        const payload = await hubResponse.json().catch(() => ({ ok: false, error: 'Invalid response from hub' }));
+        return sendJson(res, hubResponse.status, payload);
+      } catch (error) {
+        return sendJson(res, 502, { ok: false, error: `Hub request failed: ${error.message}` });
+      }
+    }
+
     if (pathname === '/api/factory/llm' && req.method === 'GET') {
       if (!isDbEnabled()) {
         return sendJson(res, 200, {
