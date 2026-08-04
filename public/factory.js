@@ -467,7 +467,7 @@ if (fixCorruptedButton) {
       const result = await api('/api/factory/fix-corrupted', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ model: 'Gemini 3.6 Flash (Low)' })
+        body: JSON.stringify({ model: 'gemini-3.6-flash-low' })
       });
       toast(result.processed?.length
         ? `Refilled ${result.processed.length} file(s) via AGY (${result.model})`
@@ -764,8 +764,200 @@ llmRoutesElement.addEventListener('click', async (event) => {
   }
 });
 
+// --- AGY account pool --------------------------------------------------------
+const agyState = document.getElementById('agy-state');
+const agyHint = document.getElementById('agy-hint');
+const agyList = document.getElementById('agy-list');
+const agyAddForm = document.getElementById('agy-add-form');
+
+// Set while a sign-in window is open: agy writes the credential into the
+// profile's keychain out-of-band, so the only way to know it worked is to poll.
+let agyPollTimer = null;
+let agySignInNotice = null;
+
+const AGY_STATUS_LABEL = {
+  ready: 'ready',
+  cooling: 'cooling down',
+  unauth: 'needs sign-in',
+  disabled: 'disabled'
+};
+
+function renderAgy(config) {
+  if (!config.installed) {
+    agyState.textContent = 'agy not installed';
+    agyList.innerHTML = `<div class="empty-state">The Antigravity CLI is not installed on this machine.<br />
+      Install it, then reload:<br /><code>${escapeHtml(config.installHint)}</code></div>`;
+    return;
+  }
+  if (!config.swapSupported) {
+    agyHint.textContent = config.swapReason || 'Multiple accounts are not supported on this platform.';
+  }
+
+  const ready = config.profiles.filter((profile) => profile.status === 'ready').length;
+  agyState.textContent = config.profiles.length
+    ? `${ready}/${config.profiles.length} ready`
+    : 'no accounts yet';
+
+  if (!config.profiles.length) {
+    agyList.innerHTML = `<div class="empty-state">No accounts yet — enrichment uses whichever Google account is
+      signed in on this machine. Add one above to enable rotation.</div>`;
+    return;
+  }
+
+  agyList.innerHTML = config.profiles.map((profile) => {
+    const cooling = profile.coolRemainingMs > 0
+      ? ` — ${Math.ceil(profile.coolRemainingMs / 60000)} min left`
+      : '';
+    const account = profile.account ? `<div class="muted">${escapeHtml(profile.account)}</div>` : '';
+    const error = profile.lastError
+      ? `<div class="muted">last error: ${escapeHtml(profile.lastError.split('\n')[0].slice(0, 120))}</div>`
+      : '';
+    const signIn = profile.status === 'unauth'
+      ? `<button type="button" class="link-button" data-agy-signin="${escapeHtml(profile.slug)}">sign in</button>`
+      : '';
+    const toggle = profile.status === 'disabled'
+      ? `<button type="button" class="link-button" data-agy-action="enable" data-agy-slug="${escapeHtml(profile.slug)}">enable</button>`
+      : `<button type="button" class="link-button" data-agy-action="disable" data-agy-slug="${escapeHtml(profile.slug)}">disable</button>`;
+    const reset = profile.status === 'cooling'
+      ? `<button type="button" class="link-button" data-agy-action="reset" data-agy-slug="${escapeHtml(profile.slug)}">clear cooldown</button>`
+      : '';
+
+    return `
+      <article class="llm-cfg-card">
+        <div><strong>${escapeHtml(profile.label || profile.slug)}</strong>
+          <span class="muted">${AGY_STATUS_LABEL[profile.status] || profile.status}${escapeHtml(cooling)}</span></div>
+        ${account}
+        <div class="muted">calls ${profile.calls} · failures ${profile.failures}</div>
+        ${error}
+        <div>${signIn}${reset}${toggle}
+          <button type="button" class="link-button danger" data-agy-remove="${escapeHtml(profile.slug)}">remove</button>
+        </div>
+      </article>`;
+  }).join('');
+}
+
+async function loadAgy() {
+  try {
+    const config = await api('/api/factory/agy');
+    renderAgy(config);
+    return config;
+  } catch (error) {
+    agyState.textContent = 'unavailable';
+    agyList.innerHTML = `<div class="empty-state">${escapeHtml(error.message)}</div>`;
+    return null;
+  }
+}
+
+/**
+ * Poll while a sign-in window is open. Stops as soon as nothing is waiting to
+ * authenticate, so an abandoned sign-in cannot leave the page polling forever.
+ */
+function pollAgyUntilAuthenticated() {
+  clearInterval(agyPollTimer);
+  let attempts = 0;
+  agyPollTimer = setInterval(async () => {
+    attempts += 1;
+    const config = await loadAgy();
+    const waitingFor = agySignInNotice?.slug;
+    const signedIn = waitingFor
+      && config?.profiles?.some((profile) => profile.slug === waitingFor && profile.status !== 'unauth');
+    if (signedIn) {
+      agySignInNotice = null;
+      renderAgySignInNotice();
+      toast(`"${waitingFor}" is signed in and in the pool.`);
+    }
+    const pending = config?.profiles?.some((profile) => profile.status === 'unauth');
+    if (!pending || signedIn || attempts > 60) clearInterval(agyPollTimer); // give up after ~5 min
+  }, 5000);
+}
+
+/**
+ * Sign-in is the one step that cannot happen in this page: agy is a terminal UI
+ * and prints nothing at all unless it owns a real TTY, so the server hands off
+ * to a Terminal window. Google may show a code to paste back, and that paste
+ * goes in the TERMINAL, not here — a toast disappears before it can say so, so
+ * this renders a banner that stays until the profile authenticates.
+ */
+function reportSignIn(signIn, slug) {
+  agySignInNotice = {
+    slug,
+    launched: Boolean(signIn?.launched),
+    manualCommand: signIn?.manualCommand || '',
+    reason: signIn?.reason || ''
+  };
+  renderAgySignInNotice();
+  pollAgyUntilAuthenticated();
+}
+
+function renderAgySignInNotice() {
+  const existing = document.getElementById('agy-signin-notice');
+  if (existing) existing.remove();
+  if (!agySignInNotice) return;
+
+  const notice = document.createElement('div');
+  notice.id = 'agy-signin-notice';
+  notice.className = 'empty-state';
+  notice.innerHTML = agySignInNotice.launched
+    ? `<strong>Finish signing in to "${escapeHtml(agySignInNotice.slug)}" in the Terminal window.</strong><br />
+       A Terminal window just opened and is waiting. If Google shows you a code, paste it
+       <strong>into that Terminal</strong> — not here. This page updates on its own once you are done.<br />
+       <span class="muted">Can't find the window? Press ⌘-Tab and look for
+       <code>signin-${escapeHtml(agySignInNotice.slug)}.command</code>.</span>`
+    : `<strong>Could not open a Terminal automatically.</strong><br />
+       ${escapeHtml(agySignInNotice.reason)}<br />
+       Run this in a terminal to sign in:<br /><code>${escapeHtml(agySignInNotice.manualCommand)}</code>`;
+  agyList.parentNode.insertBefore(notice, agyList);
+}
+
+agyAddForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const name = new FormData(agyAddForm).get('name');
+  try {
+    const result = await api('/api/factory/agy/profiles', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+    agyAddForm.reset();
+    await loadAgy();
+    reportSignIn(result.signIn, result.profile.slug);
+  } catch (error) {
+    toast(error.message, true);
+  }
+});
+
+agyList.addEventListener('click', async (event) => {
+  const signInSlug = event.target.dataset.agySignin;
+  const removeSlug = event.target.dataset.agyRemove;
+  const action = event.target.dataset.agyAction;
+
+  try {
+    if (signInSlug) {
+      const result = await api(`/api/factory/agy/profiles/${signInSlug}/signin`, { method: 'POST' });
+      return reportSignIn(result.signIn, signInSlug);
+    }
+    if (removeSlug) {
+      if (!confirm(`Remove AGY account "${removeSlug}"? Its stored sign-in is deleted from this machine.`)) return;
+      await api(`/api/factory/agy/profiles/${removeSlug}`, { method: 'DELETE' });
+      toast(`Removed "${removeSlug}"`);
+      return loadAgy();
+    }
+    if (action) {
+      await api(`/api/factory/agy/profiles/${event.target.dataset.agySlug}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ action })
+      });
+      return loadAgy();
+    }
+  } catch (error) {
+    toast(error.message, true);
+  }
+});
+
 (async function boot() {
   showDashboard();
   await refreshDashboard();
   await loadLlmConfig();
+  await loadAgy();
 })();

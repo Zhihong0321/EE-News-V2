@@ -79,6 +79,26 @@
       </div>
     </section>
 
+    <section class="workspace-section llm-config-section">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Account pool</span>
+          <h2>AGY accounts</h2>
+        </div>
+        <span id="agy-state">loading</span>
+      </div>
+      <p class="llm-hint" id="agy-hint">
+        Each account is a separate Google sign-in kept in its own OS keychain on this machine.
+        Enrichment rotates across them and cools an account down when it hits a quota.
+      </p>
+      <form class="llm-provider-form" id="agy-add-form">
+        <div class="llm-field llm-field-wide"><label for="agy-name">Account name</label>
+          <input id="agy-name" name="name" placeholder="work-1" required /></div>
+        <button type="submit" class="run-button">Add account &amp; sign in</button>
+      </form>
+      <div id="agy-list" class="llm-provider-list"></div>
+    </section>
+
     <section class="summary-grid" aria-label="Crawler summary">
       <div class="metric"><span>Active jobs</span><strong id="metric-active">0</strong></div>
       <div class="metric"><span>Worker processes</span><strong id="metric-processes">0</strong></div>

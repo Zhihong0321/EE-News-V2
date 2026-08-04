@@ -27,6 +27,16 @@ import {
   getProviderSecret
 } from './db/llm-config.js';
 import { invalidate as invalidateLlmRouting, buildRequest, extractText } from './core/llm-registry.js';
+import { isSwapSupported, resolveAgyBinary } from './agy/paths.js';
+import {
+  assertSearchListClean,
+  createProfile as createAgyProfile,
+  deleteProfile as deleteAgyProfile,
+  isAuthenticated as isAgyAuthenticated,
+  markAuthenticated as markAgyAuthenticated
+} from './agy/profile-store.js';
+import { poolStatus as agyPoolStatus, resetProfile as resetAgyProfile, setEnabled as setAgyEnabled } from './agy/session-pool.js';
+import { launchSignIn } from './agy/signin.js';
 
 loadEnv();
 
@@ -452,6 +462,84 @@ const server = http.createServer(async (req, res) => {
       });
     }
 
+    // --- AGY account pool --------------------------------------------------
+    // Worker-local by design: profiles are OS keychains on THIS machine, so
+    // unlike /api/factory/llm these routes are never proxied to the Hub. A
+    // Railway-hosted Hub has no agy install and no keychain to speak of.
+    if (pathname === '/api/factory/agy' && req.method === 'GET') {
+      try {
+        const profiles = await agyPoolStatus();
+        // The keychain is the truth about whether a sign-in landed. Stamp meta
+        // the first time we see one so the UI can stop polling.
+        for (const profile of profiles) {
+          if (profile.status !== 'unauth' && !profile.account) {
+            if (await isAgyAuthenticated(profile.slug)) await markAgyAuthenticated(profile.slug);
+          }
+        }
+        const swap = isSwapSupported();
+        return sendJson(res, 200, {
+          ok: true,
+          installed: Boolean(resolveAgyBinary()),
+          binary: resolveAgyBinary(),
+          swapSupported: swap.supported,
+          swapReason: swap.reason,
+          installHint: 'curl -fsSL https://antigravity.google/cli/install.sh | bash',
+          profiles
+        });
+      } catch (error) {
+        return sendJson(res, 500, { ok: false, error: error.message });
+      }
+    }
+
+    if (pathname === '/api/factory/agy/profiles' && req.method === 'POST') {
+      const body = await readJsonBody(req);
+      try {
+        const profile = await createAgyProfile(body.name, { label: body.label ?? null });
+        // Creating the profile and opening the sign-in window is one action:
+        // an unauthenticated profile is dead weight in the pool.
+        const signIn = await launchSignIn(profile.slug);
+        return sendJson(res, 201, { ok: true, profile, signIn });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message });
+      }
+    }
+
+    const agySignInMatch = pathname.match(/^\/api\/factory\/agy\/profiles\/([a-z0-9-]+)\/signin$/);
+    if (agySignInMatch && req.method === 'POST') {
+      try {
+        return sendJson(res, 200, { ok: true, signIn: await launchSignIn(agySignInMatch[1]) });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message });
+      }
+    }
+
+    const agyProfileMatch = pathname.match(/^\/api\/factory\/agy\/profiles\/([a-z0-9-]+)$/);
+    if (agyProfileMatch && (req.method === 'PATCH' || req.method === 'DELETE')) {
+      const slug = agyProfileMatch[1];
+      try {
+        if (req.method === 'DELETE') {
+          const removed = await deleteAgyProfile(slug);
+          return sendJson(res, removed ? 200 : 404, { ok: removed, error: removed ? undefined : 'Profile not found' });
+        }
+        const body = await readJsonBody(req);
+        if (body.action === 'reset') await resetAgyProfile(slug);
+        else if (body.action === 'enable') await setAgyEnabled(slug, true);
+        else if (body.action === 'disable') await setAgyEnabled(slug, false);
+        else return sendJson(res, 400, { ok: false, error: `Unknown action "${body.action}"` });
+        return sendJson(res, 200, { ok: true });
+      } catch (error) {
+        return sendJson(res, 400, { ok: false, error: error.message });
+      }
+    }
+
+    if (pathname === '/api/factory/agy/check' && req.method === 'POST') {
+      try {
+        return sendJson(res, 200, { ok: true, searchList: await assertSearchListClean() });
+      } catch (error) {
+        return sendJson(res, 500, { ok: false, error: error.message });
+      }
+    }
+
     if (pathname === '/api/factory/status' && req.method === 'GET') {
       const jobs = await listCrawlJobs({ outputDirectory: OUTPUT_DIR });
       let pipeline;
@@ -500,7 +588,9 @@ const server = http.createServer(async (req, res) => {
 
     if (pathname === '/api/factory/fix-corrupted' && req.method === 'POST') {
       const body = await readJsonBody(req);
-      const model = body.model || 'Gemini 3.6 Flash (Low)';
+      // Model id from `agy models` — display names like "Gemini 3.6 Flash (Low)"
+      // are not valid --model values.
+      const model = body.model || 'gemini-3.6-flash-low';
       const targetFile = body.file ? String(body.file) : null;
       try {
         const { createProvider } = await import('./core/enrich-provider.js');

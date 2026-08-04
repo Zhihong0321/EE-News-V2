@@ -10,16 +10,21 @@
 //   { content: <parsed JSON>, rawText, provenance }.
 import { spawn } from 'node:child_process';
 import { existsSync } from 'node:fs';
+import { runAgyAgent } from '../../../src/agy/run-agent.js';
+import { resolveAgyBinary } from '../../../src/agy/paths.js';
 import { articleCutoffDate } from '../enrichment-prompt.js';
 import { validateEnrichment } from '../enrichment-validator.js';
 import { cleanCorruptedText } from '../utils.js';
 
-const DEFAULT_AGY_BIN = 'C:/Users/Eternalgy/AppData/Local/agy/bin/agy.exe';
-// Legion owns the authenticated AGY account pool. Its runner detects quota/auth
-// failures, cools the affected profile, and retries the request with the next
-// ready profile from LowLedgerLegion/agy-sessions.
-const DEFAULT_AGY_ROTATION_RUNNER = 'C:/Users/Eternalgy/projects/low-legion/run-agy-agent.mjs';
-const DEFAULT_MODEL = 'Gemini 3.6 Flash (High)';
+// The account pool now lives in this repo (src/agy). The native runner leases a
+// profile, redirects HOME so agy reads that profile's credential, and rotates
+// on quota/auth rejection — the job low-legion's run-agy-agent.mjs used to do.
+// Setting AGY_ROTATION_RUNNER still forces the old external runner, for hosts
+// where the Legion pool is the one that actually holds the accounts.
+//
+// DEFAULT_MODEL is an id from `agy models`, NOT a display name. The previous
+// value here ("Gemini 3.6 Flash (High)") is not accepted by --model at all.
+const DEFAULT_MODEL = 'gemini-3.6-flash-high';
 const DEFAULT_MAX_CONCURRENT_CALLS = 3;
 const DEFAULT_MIN_START_GAP_MS = 4000;
 
@@ -72,7 +77,10 @@ export function createAgyCallGate({ maxConcurrent = DEFAULT_MAX_CONCURRENT_CALLS
 }
 
 export function isAgyPoolExhaustedError(error) {
-  return /all agy sessions exhausted|no ready agy session \(all cooling down \/ unauth\)/i.test(
+  // Native pool sets this flag directly; the string patterns are the external
+  // Legion runner's stderr, still matched so both runners fail over the same.
+  if (error?.poolExhausted) return true;
+  return /all agy sessions exhausted|no ready agy session \(all cooling down \/ unauth\)|all agy profiles exhausted/i.test(
     String(error?.agyOutput || error?.message || '')
   );
 }
@@ -191,9 +199,9 @@ export function buildAgyCommand({ bin, runner, useSessionRotation, model, prompt
   };
 }
 
-// Spawn one AGY request and resolve with its stdout text. By default, calls the
-// Legion runner rather than agy.exe directly so a quota/auth failure rotates to
-// another locally configured Google profile before this provider gives up.
+// Spawn one AGY request through the EXTERNAL Legion runner (or agy directly).
+// Kept for hosts where low-legion still owns the account pool; the native path
+// below is what runs by default.
 function runAgy({ bin, runner, useSessionRotation, model, prompt, cwd, timeoutMs }) {
   return new Promise((resolve, reject) => {
     const { command, args } = buildAgyCommand({ bin, runner, useSessionRotation, model, prompt, cwd });
@@ -237,9 +245,10 @@ function runAgy({ bin, runner, useSessionRotation, model, prompt, cwd, timeoutMs
 const JSON_RULE = '\n\nReturn ONLY the final JSON object defined in the OUTPUT SCHEMA. No markdown code fences, no commentary before or after — raw JSON only.';
 
 export function createAgyProvider(options = {}) {
-  const bin = options.bin || process.env.AGY_BIN || DEFAULT_AGY_BIN;
-  const runner = options.runner ?? process.env.AGY_ROTATION_RUNNER ?? DEFAULT_AGY_ROTATION_RUNNER;
-  const useSessionRotation = options.sessionRotation ?? (process.env.AGY_SESSION_ROTATION !== '0');
+  const bin = options.bin || resolveAgyBinary();
+  // Native pool unless an external runner is explicitly configured.
+  const runner = options.runner ?? process.env.AGY_ROTATION_RUNNER ?? null;
+  const useExternalRunner = Boolean(runner) && (options.sessionRotation ?? (process.env.AGY_SESSION_ROTATION !== '0'));
   const model = options.model || process.env.AGY_MODEL || DEFAULT_MODEL;
   const timeoutMs = options.timeoutMs || 240000;
   const cwd = options.cwd || process.cwd();
@@ -262,7 +271,11 @@ export function createAgyProvider(options = {}) {
       // pool. Skip AGY immediately so its caller can use the next provider.
       if (exhaustedPoolError) throw exhaustedPoolError;
       try {
-        return await runAgy({ bin, runner, useSessionRotation, model, prompt: promptText, cwd, timeoutMs });
+        if (useExternalRunner) {
+          return await runAgy({ bin, runner, useSessionRotation: true, model, prompt: promptText, cwd, timeoutMs });
+        }
+        const result = await runAgyAgent({ prompt: promptText, model, cwd, timeoutMs });
+        return result.text;
       } catch (error) {
         if (isAgyPoolExhaustedError(error)) {
           exhaustedPoolError = error;
