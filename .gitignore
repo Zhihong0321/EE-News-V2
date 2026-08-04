@@ -16,3 +16,8 @@ scratch/
 !.env.example
 editorial-pipeline/.runtime/
 editorial-pipeline/.venv/
+
+# AI-RADAR per-source polling state (ETags + seen-URL baselines). Machine-local
+# and regenerated on demand; committing it would make one machine's baseline
+# suppress another's first run.
+ai-radar/state/

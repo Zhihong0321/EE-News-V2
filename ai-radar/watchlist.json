@@ -1,0 +1,574 @@
+{
+  "_comment": "AI-RADAR v1 watchlist. Adding an entity or channel is a data edit, not code. status: verified = live-probed 200 on 2026-07-31 | mechanism_verified = the method works, this specific target not probed | needs_adapter = requires Playwright/HTML extraction | broken = advertises a feed that does not work | dropped = not viable for v1, reason in note.",
+  "_probed_at": "2026-07-31",
+  "entities": [
+    {
+      "slug": "openai",
+      "name": "OpenAI",
+      "category": "frontier",
+      "country": "US",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://openai.com/news/rss.xml",
+          "poll_tier": "hot",
+          "status": "verified"
+        },
+        {
+          "kind": "x_syndication",
+          "handle": "OpenAI",
+          "poll_tier": "warm",
+          "status": "mechanism_verified",
+          "note": "Syndication endpoint proven with a real tweet ID; this specific handle not individually probed."
+        }
+      ]
+    },
+    {
+      "slug": "anthropic",
+      "name": "Anthropic",
+      "category": "frontier",
+      "country": "US",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "sitemap",
+          "url": "https://www.anthropic.com/sitemap.xml",
+          "url_filter": "/news/",
+          "poll_tier": "hot",
+          "status": "verified",
+          "note": "508 URLs, all with lastmod, 252 under /news/. HTTP only, no Playwright. robots: Allow /"
+        },
+        {
+          "kind": "x_syndication",
+          "handle": "AnthropicAI",
+          "poll_tier": "warm",
+          "status": "mechanism_verified",
+          "note": "Syndication endpoint proven with a real tweet ID; this specific handle not individually probed."
+        }
+      ]
+    },
+    {
+      "slug": "google-deepmind",
+      "name": "Google DeepMind",
+      "category": "frontier",
+      "country": "US",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://deepmind.google/blog/rss.xml",
+          "poll_tier": "hot",
+          "status": "verified"
+        },
+        {
+          "kind": "rss",
+          "url": "https://blog.google/technology/ai/rss/",
+          "poll_tier": "hot",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "meta-ai",
+      "name": "Meta AI",
+      "category": "frontier",
+      "country": "US",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://engineering.fb.com/feed/",
+          "poll_tier": "hot",
+          "status": "verified",
+          "note": "ai.meta.com/blog/rss/ returns 404; this is the working substitute"
+        },
+        {
+          "kind": "hf_models",
+          "url": "https://huggingface.co/api/models?author=meta-llama&sort=createdAt&direction=-1",
+          "poll_tier": "hot",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "microsoft-ai",
+      "name": "Microsoft AI",
+      "category": "frontier",
+      "country": "US",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://blogs.microsoft.com/ai/feed/",
+          "poll_tier": "warm",
+          "status": "broken",
+          "note": "HTTP 410 Gone — needs replacement URL before enabling"
+        }
+      ]
+    },
+    {
+      "slug": "xai",
+      "name": "xAI",
+      "category": "frontier",
+      "country": "US",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "html",
+          "url": "https://x.ai/news",
+          "poll_tier": "cold",
+          "status": "dropped",
+          "note": "rss.xml, /news and /sitemap.xml ALL return 403 (Cloudflare). robots.txt allows ClaudeBot but the edge blocks anyway. Repo policy: 403 is a hard stop, never escalate. Cover via X syndication + aggregators."
+        },
+        {
+          "kind": "x_syndication",
+          "handle": "xai",
+          "poll_tier": "warm",
+          "status": "mechanism_verified",
+          "note": "Syndication endpoint proven with a real tweet ID; this specific handle not individually probed."
+        }
+      ]
+    },
+    {
+      "slug": "mistral",
+      "name": "Mistral AI",
+      "category": "frontier",
+      "country": "FR",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "sitemap",
+          "url": "https://mistral.ai/sitemap-0.xml",
+          "url_filter": "/news/",
+          "poll_tier": "hot",
+          "status": "verified",
+          "note": "459 URLs, 237 under /news/, NO lastmod - needs seeded baseline + locale filter (/fr/ etc). Reached via sitemap-index.xml"
+        },
+        {
+          "kind": "hf_models",
+          "url": "https://huggingface.co/api/models?author=mistralai&sort=createdAt&direction=-1",
+          "poll_tier": "hot",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "deepseek",
+      "name": "DeepSeek",
+      "category": "frontier",
+      "country": "CN",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "sitemap",
+          "url": "https://api-docs.deepseek.com/sitemap.xml",
+          "url_filter": "/news/",
+          "poll_tier": "hot",
+          "status": "verified",
+          "note": "63 URLs incl. dated /news/newsYYMMDD entries — DeepSeek's official announcement channel. No lastmod, but the URL encodes the date. deepseek.com/en/news is 404."
+        },
+        {
+          "kind": "github_releases",
+          "url": "https://github.com/deepseek-ai/DeepSeek-V3/releases.atom",
+          "poll_tier": "hot",
+          "status": "verified",
+          "caveat": "Pinned to ONE repo — will NOT catch a brand-new repo (e.g. DeepSeek-V4, GLM-5). The hf_models channel for the same org is the catch-all, since it sorts all org models by createdAt. Keep both."
+        },
+        {
+          "kind": "hf_models",
+          "url": "https://huggingface.co/api/models?author=deepseek-ai&sort=createdAt&direction=-1",
+          "poll_tier": "hot",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "qwen",
+      "name": "Alibaba Qwen",
+      "category": "frontier",
+      "country": "CN",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://qwenlm.github.io/blog/index.xml",
+          "poll_tier": "hot",
+          "status": "verified"
+        },
+        {
+          "kind": "github_releases",
+          "url": "https://github.com/QwenLM/Qwen3/releases.atom",
+          "poll_tier": "hot",
+          "status": "verified",
+          "caveat": "Pinned to ONE repo — will NOT catch a brand-new repo (e.g. DeepSeek-V4, GLM-5). The hf_models channel for the same org is the catch-all, since it sorts all org models by createdAt. Keep both."
+        },
+        {
+          "kind": "hf_models",
+          "url": "https://huggingface.co/api/models?author=Qwen&sort=createdAt&direction=-1",
+          "poll_tier": "hot",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "moonshot",
+      "name": "Moonshot AI (Kimi)",
+      "category": "frontier",
+      "country": "CN",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "github_releases",
+          "url": "https://github.com/MoonshotAI/Kimi-K2/releases.atom",
+          "poll_tier": "hot",
+          "status": "verified",
+          "caveat": "Pinned to ONE repo — will NOT catch a brand-new repo (e.g. DeepSeek-V4, GLM-5). The hf_models channel for the same org is the catch-all, since it sorts all org models by createdAt. Keep both."
+        },
+        {
+          "kind": "hf_models",
+          "url": "https://huggingface.co/api/models?author=moonshotai&sort=createdAt&direction=-1",
+          "poll_tier": "hot",
+          "status": "verified"
+        }
+      ],
+      "coverage_gap": "No official news/blog feed found: moonshot.cn/news, platform.moonshot.cn/blog and moonshotai.github.io yield nothing usable; platform sitemap has 0 URLs. Announcements are covered only via GitHub + HF."
+    },
+    {
+      "slug": "zhipu",
+      "name": "Zhipu / Z.ai (GLM)",
+      "category": "frontier",
+      "country": "CN",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "github_releases",
+          "url": "https://github.com/zai-org/GLM-4.5/releases.atom",
+          "poll_tier": "hot",
+          "status": "verified",
+          "caveat": "Pinned to ONE repo — will NOT catch a brand-new repo (e.g. DeepSeek-V4, GLM-5). The hf_models channel for the same org is the catch-all, since it sorts all org models by createdAt. Keep both."
+        },
+        {
+          "kind": "hf_models",
+          "url": "https://huggingface.co/api/models?author=zai-org&sort=createdAt&direction=-1",
+          "poll_tier": "hot",
+          "status": "verified"
+        }
+      ],
+      "coverage_gap": "No official news/blog feed found: z.ai/blog 404s and z.ai/sitemap.xml contains only product/account pages. zhipuai.cn/news is server-rendered but the host times out intermittently from outside CN. Announcements covered only via GitHub + HF."
+    },
+    {
+      "slug": "minimax",
+      "name": "MiniMax",
+      "category": "frontier",
+      "country": "CN",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "github_releases",
+          "url": "https://github.com/MiniMax-AI/MiniMax-M2/releases.atom",
+          "poll_tier": "hot",
+          "status": "verified",
+          "caveat": "Pinned to ONE repo — will NOT catch a brand-new repo (e.g. DeepSeek-V4, GLM-5). The hf_models channel for the same org is the catch-all, since it sorts all org models by createdAt. Keep both."
+        },
+        {
+          "kind": "html",
+          "url": "https://www.minimax.io/news",
+          "poll_tier": "cold",
+          "status": "needs_adapter",
+          "note": "Sitemap resolves but contains 0 URLs; news page yields 1 link. Playwright. Low priority - GitHub covers model drops."
+        }
+      ]
+    },
+    {
+      "slug": "bytedance-seed",
+      "name": "ByteDance Seed (Doubao)",
+      "category": "frontier",
+      "country": "CN",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "sitemap",
+          "url": "https://seed.bytedance.com/sitemap.xml",
+          "url_filter": "/blog/",
+          "poll_tier": "hot",
+          "status": "verified",
+          "note": "31 URLs, all with lastmod, 10 blog posts. Blog page is client-rendered (0 links in raw HTML) but the sitemap is clean static XML."
+        }
+      ]
+    },
+    {
+      "slug": "baidu",
+      "name": "Baidu ERNIE",
+      "category": "frontier",
+      "country": "CN",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "html",
+          "url": "https://research.baidu.com/Blog",
+          "poll_tier": "cold",
+          "status": "dropped",
+          "note": "Site is in maintenance mode - robots.txt itself returns an HTML page reading 网站维护中. Dropped from v1, recheck later."
+        }
+      ]
+    },
+    {
+      "slug": "internlm",
+      "name": "Shanghai AI Lab (InternLM)",
+      "category": "frontier",
+      "country": "CN",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "github_releases",
+          "url": "https://github.com/InternLM/InternLM/releases.atom",
+          "poll_tier": "hot",
+          "status": "verified",
+          "caveat": "Pinned to ONE repo — will NOT catch a brand-new repo (e.g. DeepSeek-V4, GLM-5). The hf_models channel for the same org is the catch-all, since it sorts all org models by createdAt. Keep both."
+        }
+      ]
+    },
+    {
+      "slug": "nvidia",
+      "name": "Nvidia",
+      "category": "infra",
+      "country": "US",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://blogs.nvidia.com/feed/",
+          "poll_tier": "hot",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "huggingface",
+      "name": "Hugging Face",
+      "category": "infra",
+      "country": "US",
+      "tier": 1,
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://huggingface.co/blog/feed.xml",
+          "poll_tier": "hot",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "aws-ai",
+      "name": "AWS AI",
+      "category": "infra",
+      "country": "US",
+      "tier": 2,
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://aws.amazon.com/blogs/machine-learning/feed/",
+          "poll_tier": "warm",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "apple-ml",
+      "name": "Apple Machine Learning",
+      "category": "infra",
+      "country": "US",
+      "tier": 2,
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://machinelearning.apple.com/rss.xml",
+          "poll_tier": "warm",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "perplexity",
+      "name": "Perplexity",
+      "category": "app",
+      "country": "US",
+      "tier": 2,
+      "sources": [
+        {
+          "kind": "x_syndication",
+          "handle": "perplexity_ai",
+          "poll_tier": "warm",
+          "status": "mechanism_verified",
+          "note": "Syndication endpoint proven with a real tweet ID; this specific handle not individually probed."
+        }
+      ]
+    }
+  ],
+  "aggregators": [
+    {
+      "slug": "hackernews",
+      "name": "Hacker News",
+      "note": "Free, no key, near-realtime. Also a discovery source for x.com tweet IDs.",
+      "sources": [
+        {
+          "kind": "json_api",
+          "url": "https://hn.algolia.com/api/v1/search_by_date?tags=story",
+          "poll_tier": "hot",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "techmeme",
+      "name": "Techmeme",
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://www.techmeme.com/feed.xml",
+          "poll_tier": "warm",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "localllama",
+      "name": "r/LocalLLaMA",
+      "note": "Fastest community signal on open-weight model drops.",
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://www.reddit.com/r/LocalLLaMA/new/.rss",
+          "poll_tier": "warm",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "techcrunch-ai",
+      "name": "TechCrunch AI",
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://techcrunch.com/category/artificial-intelligence/feed/",
+          "poll_tier": "warm",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "qbitai",
+      "name": "QbitAI 量子位",
+      "note": "Primary Chinese-language AI coverage for v1.",
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://www.qbitai.com/feed",
+          "poll_tier": "warm",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "jiqizhixin",
+      "name": "Jiqizhixin 机器之心",
+      "sources": [
+        {
+          "kind": "html",
+          "url": "https://www.jiqizhixin.com/",
+          "poll_tier": "cold",
+          "status": "needs_adapter",
+          "note": "/rss serves HTML and /sitemap.xml returns 404. Needs Playwright, or drop if QbitAI is sufficient CN coverage."
+        }
+      ]
+    },
+    {
+      "slug": "arxiv",
+      "name": "arXiv cs.CL / cs.AI / cs.LG",
+      "note": "Firehose — needs affiliation filtering before enabling.",
+      "sources": [
+        {
+          "kind": "json_api",
+          "url": "https://export.arxiv.org/api/query?search_query=cat:cs.CL&sortBy=submittedDate&sortOrder=descending",
+          "poll_tier": "cold",
+          "status": "verified"
+        }
+      ]
+    },
+    {
+      "slug": "ai-news",
+      "name": "AI News (artificialintelligence-news.com)",
+      "note": "Dedicated worldwide AI news outlet. Feed carries content:encoded (full article body), so no separate fetch is needed.",
+      "sources": [
+        {
+          "kind": "rss",
+          "url": "https://www.artificialintelligence-news.com/feed/",
+          "poll_tier": "warm",
+          "status": "verified",
+          "note": "WordPress feed, 12 items, full body inline, fresh. robots.txt is 'User-agent: * / Disallow:' — fully open."
+        }
+      ]
+    }
+  ],
+  "x_strategy": {
+    "_comment": "No account, no cookies. Discovery is allowed to fail; hydration is the reliable part.",
+    "hydration": {
+      "endpoint": "https://cdn.syndication.twimg.com/tweet-result?id={tweet_id}&lang=en",
+      "auth": "none",
+      "status": "verified",
+      "note": "Public embed infrastructure. Returns full tweet JSON: text, created_at, favorite_count, entities, media."
+    },
+    "discovery": [
+      {
+        "method": "nitter_rss",
+        "url": "https://nitter.net/{handle}/rss",
+        "status": "verified_but_fragile",
+        "note": "Serving fresh posts on 2026-07-31. Instances die often — best-effort only, never a dependency."
+      },
+      {
+        "method": "aggregator_extraction",
+        "note": "Pull x.com/*/status/<id> URLs out of the HN, Reddit and Techmeme feeds already being polled. Zero extra cost, survives Nitter dying."
+      }
+    ],
+    "rejected": [
+      {
+        "tool": "Panniantong/Agent-Reach",
+        "reason": "Requires user's own X cookies (auth_token + ct0); its own README warns of ban risk and recommends a burner account. Also shaped for interactive agent use, not a 24/7 poller."
+      },
+      {
+        "tool": "public-clis/twitter-cli",
+        "reason": "Cookie-based; the engine Agent-Reach delegates to."
+      },
+      {
+        "tool": "ythx-101/x-tweet-fetcher",
+        "reason": "Advertises 'no login' but proxies to Nitter instances — same fragility, extra dependency."
+      },
+      {
+        "tool": "d60/twikit, vladkens/twscrape",
+        "reason": "Require real X account credentials or an account pool."
+      }
+    ]
+  },
+  "excluded": [
+    {
+      "slug": "ai-bot-cn",
+      "name": "AI工具集 (ai-bot.cn)",
+      "url": "https://ai-bot.cn/daily-ai-news/",
+      "status": "excluded_by_robots",
+      "reason": "robots.txt names and blocks the entire AI/aggregator crawler class with Disallow: / — including anthropic-ai, ClaudeBot, Claude-Web, GPTBot, ChatGPT-User, CCBot, cohere-ai, Google-Extended, Bytespider, Diffbot, Scrapy, news-please, NewsNow, omgili. Its WordPress RSS is also deliberately disabled (/feed/ returns 'Feed关闭').",
+      "note": "User-agent: * leaves content paths open, so a generic UA would pass the letter of the file — but selecting a UA to slip past a list that names exactly this bot class is evasion, which AGENTS.md forbids. Excluded unless the operator grants written permission.",
+      "alternative": "CN coverage in v1 comes from QbitAI RSS plus first-party GitHub/HF release signals, which are earlier than any aggregator anyway."
+    }
+  ],
+  "_known_issues": [
+    {
+      "issue": "GitHub org-level activity feeds are empty",
+      "detail": "https://github.com/<org>.atom returns valid Atom with zero <entry> elements for orgs (verified on deepseek-ai, QwenLM, MoonshotAI, zai-org). They cannot be used to watch a whole org, so per-repo release feeds must be paired with the HF org API."
+    },
+    {
+      "issue": "China-hosted hosts are slow/flaky from outside CN",
+      "detail": "zhipuai.cn timed out repeatedly at 20-25s. Needs generous timeouts and tolerant failure handling, and belongs in the warm/cold tier rather than hot."
+    }
+  ]
+}
