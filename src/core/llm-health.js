@@ -57,7 +57,7 @@ function blank(provider) {
 
 /**
  * Record one provider call outcome.
- * @param {string} provider  e.g. 'minimax' | 'mimo-0730' | 'anthropic' | 'tagger'
+ * @param {string} provider  e.g. 'openai' | 'stepfun' | 'tagger'
  * @param {string} [outcome] explicit state, or 'auto'/undefined to classify from meta
  * @param {{ latencyMs?: number, error?: any, status?: number }} [meta]
  */

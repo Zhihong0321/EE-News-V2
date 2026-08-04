@@ -2,13 +2,13 @@
 // One-command news pipeline: fetch -> enrich -> render.
 //
 // Usage:
-//   node src/pipeline-cli.js <siteId> [--provider agy|anthropic|cavoti] [--model id]
+//   node src/pipeline-cli.js <siteId> [--provider openai|cavoti] [--model id]
 //                                     [--no-enrich] [--no-render]
 //                                     [--enrich-limit N] [--concurrency N] [--since YYYY-MM-DD]
 //
 // Examples:
-//   node src/pipeline-cli.js sinchew                 # fetch + agy-enrich + render
-//   node src/pipeline-cli.js thestar --provider anthropic
+//   node src/pipeline-cli.js sinchew                 # fetch + enrich + render
+//   node src/pipeline-cli.js thestar --provider cavoti
 //   node src/pipeline-cli.js utusan --no-render      # fetch + enrich only
 import { loadEnv } from './config/env.js';
 import { getAdapter } from './sites/index.js';
@@ -43,7 +43,7 @@ async function resolveAdapter(id) {
 const { flags, positional } = parseArgs(process.argv.slice(2));
 const siteId = positional[0];
 if (!siteId) {
-  console.error('Usage: node src/pipeline-cli.js <siteId> [--provider agy|anthropic|cavoti] [--model id] [--no-enrich] [--no-render] [--enrich-limit N] [--concurrency N] [--since YYYY-MM-DD]');
+  console.error('Usage: node src/pipeline-cli.js <siteId> [--provider openai|cavoti] [--model id] [--no-enrich] [--no-render] [--enrich-limit N] [--concurrency N] [--since YYYY-MM-DD]');
   process.exit(1);
 }
 
@@ -51,7 +51,7 @@ const toInt = (v) => (Number.isInteger(Number(v)) && Number(v) > 0 ? Number(v) :
 
 resolveAdapter(siteId)
   .then((adapter) => runPipeline(adapter, {
-    provider: typeof flags.provider === 'string' ? flags.provider : 'agy',
+    provider: typeof flags.provider === 'string' ? flags.provider : 'openai',
     model: typeof flags.model === 'string' ? flags.model : undefined,
     enrich: !flags['no-enrich'],
     render: !flags['no-render'],

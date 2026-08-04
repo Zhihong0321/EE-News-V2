@@ -1,13 +1,14 @@
 // Assigns open-vocabulary topic tags to a fetched article using the same
-// Anthropic-compatible endpoint as the editorial enrichment pipeline.
-// Credentials come ONLY from the environment:
-//   ANTHROPIC_BASE_URL   e.g. https://cavoti.com/  (or https://api.anthropic.com)
-//   ANTHROPIC_AUTH_TOKEN e.g. sk-...               (sent as x-api-key)
-//   ANTHROPIC_MODEL      e.g. claude-sonnet-5      (overridable per call)
+// OpenAI-standard chat-completions endpoint as the rest of the pipeline
+// (POST {base}/v1/chat/completions, Bearer auth). Credentials come ONLY from
+// the environment:
+//   OPENAI_BASE_URL  e.g. https://api.stepfun.com  (default: https://api.openai.com)
+//   OPENAI_API_KEY   e.g. sk-...                   (sent as a Bearer token)
+//   OPENAI_MODEL     e.g. step-3.7-flash           (overridable per call)
 //
 // FACTORY OVERRIDE: when the factory's LLM control plane has a chain configured
-// for the 'tag' task, that chain replaces DEFAULT_PROVIDERS below. With nothing
-// configured (or no database) the built-in pool is used unchanged.
+// for the 'tag' task, that chain replaces the env provider below. With nothing
+// configured (or no database) the env provider is used unchanged.
 import { loadEnv } from '../config/env.js';
 import { report } from './llm-health.js';
 import { chainFor, buildRequest, extractText } from './llm-registry.js';
@@ -18,41 +19,19 @@ function cleanBaseUrl(url) {
   return String(url || '').replace(/\/+(?:v1)?\/*$/i, '');
 }
 
-const DEFAULT_PROVIDERS = [
-  {
-    name: 'openai-key1',
-    baseUrl: 'https://test1122.up.railway.app',
-    model: 'gpt-5.6-luna',
-    token: 'sk-1BhOE9VPCgSImzzlRR0hFKILrhGHbc75UVHw5rO30MA6iTUY'
-  },
-  {
-    name: 'openai-key2',
-    baseUrl: 'https://test1122.up.railway.app',
-    model: 'gpt-5.6-luna',
-    token: 'sk-5gdJY6I3addAi6jxyrijUyXORPtxzF77lj2W7xey4hSL6fzQ'
-  }
-];
-
 let providerIndex = 0;
 
 function getProviderPool(options = {}) {
-  if (options.baseUrl || options.authToken) {
-    return [{
-      name: 'custom',
-      baseUrl: cleanBaseUrl(options.baseUrl || process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com'),
-      token: options.authToken || process.env.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY,
-      model: options.model || process.env.ANTHROPIC_MODEL || 'gpt-5.6-luna'
-    }];
+  const token = options.authToken || process.env.OPENAI_API_KEY;
+  if (!token) {
+    throw new Error('No tagging credentials configured (set OPENAI_API_KEY, or route the tag task from the factory)');
   }
-
-  const pool = DEFAULT_PROVIDERS.map((p) => ({ ...p, baseUrl: cleanBaseUrl(p.baseUrl) }));
-  if (process.env.DISTILL_MINIMAX_TOKEN) {
-    pool.push({ name: 'minimax', baseUrl: cleanBaseUrl('https://api.minimax.io/anthropic'), model: 'MiniMax-M3', token: process.env.DISTILL_MINIMAX_TOKEN });
-  }
-  if (process.env.DISTILL_MIMO_0730_TOKEN) {
-    pool.push({ name: 'mimo-0730', baseUrl: cleanBaseUrl('https://token-plan-sgp.xiaomimimo.com/anthropic'), model: 'mimo-v2.5-pro', token: process.env.DISTILL_MIMO_0730_TOKEN });
-  }
-  return pool;
+  return [{
+    name: options.baseUrl || options.authToken ? 'custom' : 'openai',
+    baseUrl: cleanBaseUrl(options.baseUrl || process.env.OPENAI_BASE_URL || 'https://api.openai.com'),
+    token,
+    model: options.model || process.env.OPENAI_MODEL || 'gpt-4o-mini'
+  }];
 }
 
 function tryParseMetadataJson(text) {
@@ -135,7 +114,7 @@ export async function generateTagsAndCountry(article, options = {}) {
 
   for (let i = 0; i < pool.length; i += 1) {
     const cred = pool[(startIndex + i) % pool.length];
-    const model = options.model || cred.model || 'gpt-5.6-luna';
+    const model = options.model || cred.model || 'gpt-4o-mini';
     // 2048, not 512: reasoning models spend most of a small budget thinking and
     // return an empty answer. See the same note in distill.js.
     const request = buildRequest({ ...cred, model }, prompt, { maxTokens: 2048 });
@@ -159,7 +138,7 @@ export async function generateTagsAndCountry(article, options = {}) {
         throw new Error(`Tagging provider ${cred.name} returned HTTP ${response.status}: ${message}`);
       }
       const payload = await response.json();
-      const parsed = tryParseMetadataJson(extractText(payload, cred.apiStyle));
+      const parsed = tryParseMetadataJson(extractText(payload));
       if (!parsed) {
         throw new Error(`Tagging model ${cred.name} did not return valid metadata JSON`);
       }

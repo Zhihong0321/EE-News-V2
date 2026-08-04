@@ -362,7 +362,7 @@ function runFactoryFetch(adapter, { since } = {}) {
   // advances an article all the way to a rendered infographic in one action.
   // A since-backfill has no fixed daily target - the adapter's normal
   // articleLimit exists to cap a single "today" run, not a multi-day pull.
-  const provider = process.env.PIPELINE_PROVIDER || 'agy';
+  const provider = process.env.PIPELINE_PROVIDER || 'openai';
   runPipeline(adapter, {
     outputDirectory: OUTPUT_DIR,
     editorialOutputDirectory: EDITORIAL_OUTPUT_DIR,
@@ -652,7 +652,7 @@ const server = http.createServer(async (req, res) => {
       try {
         const id = await createLlmProvider({
           name: body.name,
-          apiStyle: body.apiStyle || 'anthropic',
+          apiStyle: body.apiStyle || 'openai',
           baseUrl: body.baseUrl,
           apiKey: body.apiKey,
           enabled: body.enabled !== false,
@@ -763,7 +763,7 @@ const server = http.createServer(async (req, res) => {
           return sendJson(res, 200, { ok: false, status: response.status, latencyMs, error: message });
         }
         const payload = await response.json();
-        const text = extractText(payload, provider.apiStyle).trim();
+        const text = extractText(payload).trim();
         return sendJson(res, 200, {
           ok: Boolean(text),
           status: response.status,

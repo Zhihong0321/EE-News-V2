@@ -1,19 +1,25 @@
-// Anthropic-compatible provider (works with api.anthropic.com or a compatible
-// proxy such as cavoti.com). Credentials come ONLY from the environment:
-//   ANTHROPIC_BASE_URL   e.g. https://cavoti.com/  (or https://api.anthropic.com)
-//   ANTHROPIC_AUTH_TOKEN e.g. sk-...               (sent as x-api-key)
-//   ANTHROPIC_MODEL      e.g. claude-sonnet-5      (overridable per call)
+// OpenAI-standard chat-completions provider (works with api.openai.com or any
+// compatible endpoint such as StepFun). Credentials come ONLY from the
+// environment:
+//   OPENAI_BASE_URL  e.g. https://api.stepfun.com  (or https://api.openai.com)
+//   OPENAI_API_KEY   e.g. sk-...                   (sent as a Bearer token)
+//   OPENAI_MODEL     e.g. step-3.7-flash           (overridable per call)
 // No secrets are ever hard-coded here.
 //
-// Requests are STREAMED (SSE). Long bilingual generations otherwise exceed the
+// Requests are STREAMED (SSE). Long bilingual generations otherwise exceed a
 // proxy's gateway timeout and return Cloudflare 524; streaming keeps the
 // connection busy with incremental tokens so the gateway never times out.
+//
+// NO SERVER-SIDE TOOLS. The chat-completions standard has no portable
+// web-search tool, so enrichment works from the article itself. The validator
+// only requires the "core" source — external sources are a warning, not an
+// error — so the pipeline still completes without external research.
 import { articleCutoffDate } from '../enrichment-prompt.js';
 
 function resolveCredential(options = {}) {
-  const baseUrl = (options.baseUrl || process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com').replace(/\/+$/, '');
-  const token = options.authToken || process.env.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY;
-  if (!token) throw new Error('ANTHROPIC_AUTH_TOKEN (or ANTHROPIC_API_KEY) is not set');
+  const baseUrl = (options.baseUrl || process.env.OPENAI_BASE_URL || 'https://api.openai.com').replace(/\/+$/, '');
+  const token = options.authToken || process.env.OPENAI_API_KEY;
+  if (!token) throw new Error('OPENAI_API_KEY is not set');
   return { baseUrl, token };
 }
 
@@ -75,11 +81,10 @@ function sanitizeSources(content, cutoff) {
   return content;
 }
 
-export function createAnthropicProvider(options = {}) {
-  const model = options.model || process.env.ANTHROPIC_MODEL || 'claude-sonnet-5';
+export function createOpenAiProvider(options = {}) {
+  const model = options.model || process.env.OPENAI_MODEL || 'gpt-4o-mini';
   const fetchImpl = options.fetchImpl || fetch;
   const attempts = options.attempts || 3;
-  const useWebSearch = options.webSearch !== false;
   const maxOutputTokens = options.maxOutputTokens || 32000;
 
   return {
@@ -88,23 +93,22 @@ export function createAnthropicProvider(options = {}) {
       const { baseUrl, token } = resolveCredential(options);
       const cutoff = article ? articleCutoffDate(article) : null;
 
-      // One streamed call to the messages endpoint, with retry/backoff.
-      // Returns { text, stopReason, usage, webSearchCalls, citations }.
+      // One streamed call to the chat-completions endpoint, with retry/backoff.
+      // Returns { text, finishReason, usage }.
       async function callApi(body) {
         let lastError = null;
         for (let attempt = 1; attempt <= attempts; attempt += 1) {
           const controller = new AbortController();
           const timeout = setTimeout(() => controller.abort(), options.timeoutMs || 300000);
           try {
-            const response = await fetchImpl(`${baseUrl}/v1/messages`, {
+            const response = await fetchImpl(`${baseUrl}/v1/chat/completions`, {
               method: 'POST',
               headers: {
-                'x-api-key': token,
-                'anthropic-version': '2023-06-01',
+                authorization: `Bearer ${token}`,
                 'content-type': 'application/json',
                 accept: 'text/event-stream'
               },
-              body: JSON.stringify({ ...body, stream: true }),
+              body: JSON.stringify({ ...body, stream: true, stream_options: { include_usage: true } }),
               signal: controller.signal
             });
             if (!response.ok) {
@@ -118,45 +122,27 @@ export function createAnthropicProvider(options = {}) {
             if (!response.body) throw new Error('Provider returned an empty stream');
 
             let text = '';
-            let stopReason = null;
+            let finishReason = null;
             let usage = null;
-            let webSearchCalls = 0;
-            const citations = [];
-            const seen = new Set();
             const decoder = new TextDecoder();
             let buffer = '';
 
-            const handle = (event) => {
-              switch (event.type) {
-                case 'message_start':
-                  if (event.message?.usage) usage = event.message.usage;
-                  break;
-                case 'content_block_start':
-                  if (event.content_block?.type === 'server_tool_use') webSearchCalls += 1;
-                  break;
-                case 'content_block_delta':
-                  if (event.delta?.type === 'text_delta') text += event.delta.text || '';
-                  if (event.delta?.type === 'citations_delta' && event.delta.citation?.url) {
-                    const url = event.delta.citation.url;
-                    if (!seen.has(url)) {
-                      seen.add(url);
-                      citations.push({ title: event.delta.citation.title || '', url });
-                    }
-                  }
-                  break;
-                case 'message_delta':
-                  if (event.delta?.stop_reason) stopReason = event.delta.stop_reason;
-                  if (event.usage) usage = { ...(usage || {}), ...event.usage };
-                  break;
-                case 'error':
-                  throw new Error(`Stream error: ${event.error?.message || 'unknown'}`);
-                default:
-                  break;
-              }
+            // A chunk carries usage only on the final (choice-less) frame when
+            // stream_options.include_usage is honoured; endpoints that ignore
+            // the flag simply leave usage null.
+            const handle = (chunk) => {
+              if (chunk.error) throw new Error(`Stream error: ${chunk.error.message || 'unknown'}`);
+              if (chunk.usage) usage = chunk.usage;
+              const choice = chunk.choices?.[0];
+              if (!choice) return;
+              // Reasoning models stream their thinking in `reasoning_content`;
+              // only `content` is the answer.
+              if (typeof choice.delta?.content === 'string') text += choice.delta.content;
+              if (choice.finish_reason) finishReason = choice.finish_reason;
             };
 
-            for await (const chunk of response.body) {
-              buffer += decoder.decode(chunk, { stream: true });
+            for await (const piece of response.body) {
+              buffer += decoder.decode(piece, { stream: true });
               let nl;
               while ((nl = buffer.indexOf('\n')) >= 0) {
                 const line = buffer.slice(0, nl).trim();
@@ -164,12 +150,12 @@ export function createAnthropicProvider(options = {}) {
                 if (!line.startsWith('data:')) continue;
                 const data = line.slice(5).trim();
                 if (!data || data === '[DONE]') continue;
-                let event;
-                try { event = JSON.parse(data); } catch { continue; }
-                handle(event);
+                let chunk;
+                try { chunk = JSON.parse(data); } catch { continue; }
+                handle(chunk);
               }
             }
-            return { text, stopReason, usage, webSearchCalls, citations };
+            return { text, finishReason, usage };
           } catch (error) {
             lastError = error;
             const retryable = error.name === 'AbortError' || !error.status || error.status >= 500 || error.status === 429;
@@ -182,41 +168,29 @@ export function createAnthropicProvider(options = {}) {
         throw lastError;
       }
 
-      // Step 1 — research call (web search allowed). The model may narrate its
-      // findings as prose instead of emitting JSON; that is expected.
-      const researchBody = {
+      // Step 1 — reasoning call. The model may narrate its analysis as prose
+      // instead of emitting JSON; that is expected.
+      const research = await callApi({
         model,
         max_tokens: maxOutputTokens,
         messages: [{ role: 'user', content: prompt }]
-      };
-      if (useWebSearch) {
-        researchBody.tools = [{ type: 'web_search_20250305', name: 'web_search', max_uses: options.maxWebSearches || 5 }];
-      }
-      const research = await callApi(researchBody);
+      });
 
-      // If the research turn already produced valid JSON, use it directly.
+      // If the first turn already produced valid JSON, use it directly.
       let content = tryParseJson(research.text);
       let finalizeUsage = null;
 
-      // Step 2 — finalize call (no tools). Force JSON-only output using the
-      // research gathered above. Only runs when step 1 did not yield JSON.
+      // Step 2 — finalize call. Force JSON-only output using the analysis
+      // above. Only runs when step 1 did not yield JSON.
       if (!content) {
-        // Give the model the exact URLs it surfaced during research, so source
-        // entries carry real http(s) URLs instead of empty strings.
-        const citationList = (research.citations || [])
-          .slice(0, 20)
-          .map((c, i) => `${i + 1}. ${c.title || '(untitled)'} — ${c.url}`)
-          .join('\n');
-        const sourceRule = citationList
-          ? `Every source's "url" MUST be a real http(s) URL. Use these exact URLs found during research where relevant:\n${citationList}\nNever leave a source "url" empty — if you cannot attach a real URL to a source, omit that source entirely. Always keep the "core" source with the original article URL.`
-          : 'Every source\'s "url" MUST be a real http(s) URL. Never leave a source "url" empty — if you cannot attach a real URL, omit that source. Always keep the "core" source with the original article URL.';
+        const sourceRule = 'Every source\'s "url" MUST be a real http(s) URL taken from the article itself. Never invent a URL and never leave a source "url" empty — if you cannot attach a real URL, omit that source. Always keep the "core" source with the original article URL.';
 
         const finalizeMessages = [
           { role: 'user', content: prompt },
-          { role: 'assistant', content: research.text || '(research completed)' },
+          { role: 'assistant', content: research.text || '(analysis completed)' },
           {
             role: 'user',
-            content: `Now output ONLY the final JSON object defined in the OUTPUT SCHEMA, using the research above as evidence. Fill every { "en", "zh" } pair in both languages. ${sourceRule} Return raw JSON with no commentary, no explanation, and no markdown code fences.`
+            content: `Now output ONLY the final JSON object defined in the OUTPUT SCHEMA, using the analysis above as evidence. Fill every { "en", "zh" } pair in both languages. ${sourceRule} Return raw JSON with no commentary, no explanation, and no markdown code fences.`
           }
         ];
 
@@ -230,10 +204,10 @@ export function createAnthropicProvider(options = {}) {
           const finalize = await callApi({ model, max_tokens: maxOutputTokens, messages: finalizeMessages });
           finalizeUsage = finalize.usage || finalizeUsage;
           let accumulated = finalize.text;
-          let stopReason = finalize.stopReason;
+          let finishReason = finalize.finishReason;
           content = tryParseJson(accumulated);
 
-          for (let cont = 0; !content && stopReason === 'max_tokens' && cont < 2; cont += 1) {
+          for (let cont = 0; !content && finishReason === 'length' && cont < 2; cont += 1) {
             const continuation = await callApi({
               model,
               max_tokens: maxOutputTokens,
@@ -244,37 +218,35 @@ export function createAnthropicProvider(options = {}) {
               ]
             });
             accumulated += continuation.text;
-            stopReason = continuation.stopReason;
+            finishReason = continuation.finishReason;
             if (continuation.usage) finalizeUsage = { ...(finalizeUsage || {}), ...continuation.usage };
             content = tryParseJson(accumulated);
           }
 
-          if (!content) lastDebug = { attempt, stopReason, len: accumulated.length, head: accumulated.slice(0, 200), tail: accumulated.slice(-400) };
+          if (!content) lastDebug = { attempt, finishReason, len: accumulated.length, head: accumulated.slice(0, 200), tail: accumulated.slice(-400) };
         }
 
         if (!content) {
           if (process.env.ENRICH_DEBUG && lastDebug) {
-            console.error(`[ENRICH_DEBUG] finalize failed after ${finalizeAttempts} attempts: stopReason=${lastDebug.stopReason} len=${lastDebug.len} head=${JSON.stringify(lastDebug.head)} tail=${JSON.stringify(lastDebug.tail)}`);
+            console.error(`[ENRICH_DEBUG] finalize failed after ${finalizeAttempts} attempts: finishReason=${lastDebug.finishReason} len=${lastDebug.len} head=${JSON.stringify(lastDebug.head)} tail=${JSON.stringify(lastDebug.tail)}`);
           }
           throw new Error('Model did not return a JSON object after finalize step');
         }
       }
 
-      // Drop research sources the model left without a usable URL or dated after
-      // the research cutoff (and any dangling references to them), so a single
-      // bad source can't fail the article.
+      // Drop sources the model left without a usable URL or dated after the
+      // research cutoff (and any dangling references to them), so a single bad
+      // source can't fail the article.
       content = sanitizeSources(content, cutoff);
 
       return {
         content,
         rawText: research.text,
         provenance: {
-          provider: 'anthropic',
+          provider: 'openai',
           model,
-          responseStatus: research.stopReason || null,
-          webSearchCalls: research.webSearchCalls,
+          responseStatus: research.finishReason || null,
           finalizeUsed: Boolean(finalizeUsage),
-          apiCitations: research.citations,
           usage: research.usage || null,
           finalizeUsage
         }

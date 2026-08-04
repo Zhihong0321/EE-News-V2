@@ -13,8 +13,12 @@ import { query, getPool, isDbEnabled } from './pool.js';
 /** Tasks that can be routed from the factory UI. */
 export const ROUTABLE_TASKS = ['distill', 'tag', 'enrich'];
 
-/** Supported request shapes. */
-export const API_STYLES = ['anthropic', 'openai'];
+/**
+ * Supported request shapes. The pipeline speaks one standard end to end —
+ * OpenAI chat-completions — so this is deliberately a single-entry list rather
+ * than a per-provider switch.
+ */
+export const API_STYLES = ['openai'];
 
 /** Show enough of a key to recognise it, never enough to use it. */
 export function maskKey(key) {
@@ -91,7 +95,7 @@ export async function getProviderSecret(providerId) {
   };
 }
 
-export async function createProvider({ name, apiStyle = 'anthropic', baseUrl, apiKey, enabled = true, notes = null }) {
+export async function createProvider({ name, apiStyle = 'openai', baseUrl, apiKey, enabled = true, notes = null }) {
   if (!String(name || '').trim()) throw new Error('Provider name is required');
   if (!normalizeBaseUrl(baseUrl)) throw new Error('Provider baseUrl is required');
   if (!String(apiKey || '').trim()) throw new Error('Provider apiKey is required');

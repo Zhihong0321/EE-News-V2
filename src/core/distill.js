@@ -2,39 +2,24 @@
 // English-only factual gist used as the comparison key for same-country,
 // recent-window duplicate detection across sources.
 //
-// Distillation runs against MiniMax / Xiaomi MiMo, all exposed over the same
-// Anthropic-compatible /v1/messages shape. A fallback CHAIN is tried in order
-// (MiniMax -> MiMo 0730 -> MiMo 0726): the first provider that returns a
-// non-empty gist wins, so a single provider being down/rate-limited no longer
-// fails the whole distill stage. Base URLs and model ids are non-secret
-// defaults below; the per-provider API keys come ONLY from the environment
-// (gitignored .env), never from committed code:
-//   DISTILL_MINIMAX_TOKEN     -> MiniMax-M3        @ api.minimax.io/anthropic
-//   DISTILL_MIMO_0730_TOKEN   -> mimo-v2.5-pro     @ token-plan-sgp.xiaomimimo.com/anthropic
-//   DISTILL_MIMO_0726_TOKEN   -> mimo-v2.5-pro     @ token-plan-sgp.xiaomimimo.com/anthropic
-// Legacy single-provider config (ANTHROPIC_BASE_URL / ANTHROPIC_AUTH_TOKEN /
-// ANTHROPIC_MODEL, or explicit options.baseUrl/authToken) still works and is
-// used as a final fallback when no DISTILL_* token is set.
+// Distillation runs against an OpenAI-standard chat-completions endpoint
+// (POST {base}/v1/chat/completions, Bearer auth). Base URL and model id are
+// non-secret and may be set in the environment; the API key comes ONLY from the
+// environment (gitignored .env), never from committed code:
+//   OPENAI_BASE_URL  e.g. https://api.stepfun.com   (default: https://api.openai.com)
+//   OPENAI_API_KEY   e.g. sk-...
+//   OPENAI_MODEL     e.g. step-3.7-flash
+// Explicit options.baseUrl/authToken still force a single-provider run (tests).
 //
 // FACTORY OVERRIDE: when the factory's LLM control plane has a chain configured
-// for the 'distill' task, that chain wins and the DISTILL_*/ANTHROPIC_* chain
-// below is not consulted. With nothing configured (or no database) the built-in
-// chain is used unchanged, so this file still works standalone.
+// for the 'distill' task, that chain wins and the OPENAI_* fallback below is not
+// consulted. With nothing configured (or no database) the env provider is used,
+// so this file still works standalone.
 import { loadEnv } from '../config/env.js';
 import { report } from './llm-health.js';
 import { chainFor, buildRequest, extractText } from './llm-registry.js';
 
 loadEnv();
-
-const XIAOMI_ANTHROPIC_BASE = 'https://token-plan-sgp.xiaomimimo.com/anthropic';
-
-// Ordered fallback chain. Each entry is only used when its token env var is
-// set, so the chain degrades gracefully to whatever credentials are present.
-const PROVIDER_CHAIN = [
-  { name: 'minimax', tokenEnv: 'DISTILL_MINIMAX_TOKEN', baseUrl: 'https://api.minimax.io/anthropic', model: 'MiniMax-M3' },
-  { name: 'mimo-0730', tokenEnv: 'DISTILL_MIMO_0730_TOKEN', baseUrl: XIAOMI_ANTHROPIC_BASE, model: 'mimo-v2.5-pro' },
-  { name: 'mimo-0726', tokenEnv: 'DISTILL_MIMO_0726_TOKEN', baseUrl: XIAOMI_ANTHROPIC_BASE, model: 'mimo-v2.5-pro' }
-];
 
 function normalizeBase(url) {
   return String(url || '').replace(/\/+$/, '');
@@ -42,40 +27,20 @@ function normalizeBase(url) {
 
 /**
  * Resolve the ordered list of { name, baseUrl, model, token } providers to try.
- * Explicit options.baseUrl/authToken force a single-provider run (used by
- * tests). Otherwise the DISTILL_* chain is used, falling back to the legacy
- * ANTHROPIC_* single provider when no chain token is configured.
+ * With no factory chain configured this is the single OPENAI_* provider from
+ * the environment; explicit options.baseUrl/authToken override it.
  */
 function resolveProviders(options = {}) {
-  if (options.authToken || options.baseUrl) {
-    return [{
-      name: 'options',
-      baseUrl: normalizeBase(options.baseUrl || process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com'),
-      model: options.model || process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
-      token: options.authToken || process.env.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY
-    }];
+  const token = options.authToken || process.env.OPENAI_API_KEY;
+  if (!token) {
+    throw new Error('No distillation credentials configured (set OPENAI_API_KEY, or route the distill task from the factory)');
   }
-
-  const providers = [];
-  for (const entry of PROVIDER_CHAIN) {
-    const token = process.env[entry.tokenEnv];
-    if (token) providers.push({ name: entry.name, baseUrl: normalizeBase(entry.baseUrl), model: entry.model, token });
-  }
-
-  const legacyToken = process.env.ANTHROPIC_AUTH_TOKEN || process.env.ANTHROPIC_API_KEY;
-  if (legacyToken) {
-    providers.push({
-      name: 'anthropic',
-      baseUrl: normalizeBase(process.env.ANTHROPIC_BASE_URL || 'https://api.anthropic.com'),
-      model: options.model || process.env.ANTHROPIC_MODEL || 'claude-sonnet-5',
-      token: legacyToken
-    });
-  }
-
-  if (!providers.length) {
-    throw new Error('No distillation credentials configured (set DISTILL_MINIMAX_TOKEN / DISTILL_MIMO_0730_TOKEN / DISTILL_MIMO_0726_TOKEN, or ANTHROPIC_AUTH_TOKEN)');
-  }
-  return providers;
+  return [{
+    name: options.baseUrl || options.authToken ? 'options' : 'openai',
+    baseUrl: normalizeBase(options.baseUrl || process.env.OPENAI_BASE_URL || 'https://api.openai.com'),
+    model: options.model || process.env.OPENAI_MODEL || 'gpt-4o-mini',
+    token
+  }];
 }
 
 function clampWords(text, maxWords) {
@@ -104,13 +69,12 @@ async function callProvider(provider, prompt, { fetchImpl, timeoutMs, maxWords }
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const startedAt = Date.now();
-  // A 30-word gist plus the reasoning/thinking block some models emit by
-  // default must both fit in max_tokens; 128 starved the answer (fix plan
-  // P0-B.1) and 512 still starves it for heavier reasoners — measured: StepFun
-  // step-3.7-flash spends ~700 tokens thinking before emitting the gist, and
-  // returns a thinking-only (empty-answer) response at 512. Now that operators
-  // can point any model at this task from the factory, budget for the slowest.
-  // buildRequest also picks the anthropic vs openai request shape.
+  // A 30-word gist plus the reasoning block some models emit by default must
+  // both fit in max_tokens; 128 starved the answer (fix plan P0-B.1) and 512
+  // still starves it for heavier reasoners — measured: StepFun step-3.7-flash
+  // spends ~700 tokens thinking before emitting the gist, and returns a
+  // thinking-only (empty-answer) response at 512. Now that operators can point
+  // any model at this task from the factory, budget for the slowest.
   const request = buildRequest(provider, prompt, { maxTokens: 2048 });
   let response;
   try {
@@ -141,9 +105,9 @@ async function callProvider(provider, prompt, { fetchImpl, timeoutMs, maxWords }
     throw error;
   }
   const payload = await response.json();
-  // Some models return a `thinking`/`reasoning` block alongside the answer;
-  // extractText keeps only the answer, for either request shape.
-  const text = extractText(payload, provider.apiStyle);
+  // Reasoning models return their thinking in a sibling `reasoning_content`
+  // field; extractText keeps only the answer.
+  const text = extractText(payload);
   const gist = clampWords(text, maxWords);
   if (!gist) {
     const error = new Error('Distillation model returned an empty gist');

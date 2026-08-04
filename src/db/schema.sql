@@ -79,12 +79,13 @@ create index if not exists article_pipeline_status_lookup_idx
 -- ---------------------------------------------------------------------------
 
 -- One row per API endpoint + credential pair.
--- api_style: 'anthropic' (POST {base_url}/v1/messages, x-api-key header)
---         or 'openai'    (POST {base_url}/v1/chat/completions, Bearer header)
+-- api_style is always 'openai': POST {base_url}/v1/chat/completions with a
+-- Bearer header. The column is kept (rather than dropped) so existing rows and
+-- queries stay valid, but it now has exactly one legal value.
 create table if not exists llm_providers (
   id          bigint generated always as identity primary key,
   name        text not null unique,
-  api_style   text not null default 'anthropic',
+  api_style   text not null default 'openai',
   base_url    text not null,
   api_key     text not null,
   enabled     boolean not null default true,
@@ -92,6 +93,14 @@ create table if not exists llm_providers (
   created_at  timestamptz not null default now(),
   updated_at  timestamptz not null default now()
 );
+
+-- The Anthropic request shape was removed from the codebase; every endpoint is
+-- now called as OpenAI chat-completions. Flip the default and any rows left
+-- over from the two-style era, so a pre-existing provider keeps resolving
+-- instead of routing to a shape nothing implements any more. Base URLs pointing
+-- at an Anthropic-only endpoint still need repointing by hand.
+alter table llm_providers alter column api_style set default 'openai';
+update llm_providers set api_style = 'openai', updated_at = now() where api_style <> 'openai';
 
 -- Models a provider exposes. `model` is the exact id sent in the request body.
 create table if not exists llm_models (

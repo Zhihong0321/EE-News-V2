@@ -50,7 +50,7 @@ const STAGE_HANDLERS = {
 
   async enrich(article) {
     const prompt = buildEnrichmentPrompt(article);
-    const provider = createProvider(process.env.ENRICH_PROVIDER || 'agy');
+    const provider = createProvider(process.env.ENRICH_PROVIDER || 'openai');
     const response = await provider.enrich(prompt, article);
     const validation = validateEnrichment(article, response.content);
     if (!validation.valid) {

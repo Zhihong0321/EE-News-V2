@@ -4,7 +4,7 @@
 // command line.
 //
 // Usage:
-//   node src/finish-cli.js [--provider agy|anthropic|cavoti] [--model id]
+//   node src/finish-cli.js [--provider openai|cavoti] [--model id]
 //                          [--batch N] [--concurrency N] [--no-render]
 import { loadEnv } from './config/env.js';
 import { finishBacklog } from './core/finish-backlog.js';
@@ -27,7 +27,7 @@ const flags = parseArgs(process.argv.slice(2));
 const toInt = (v) => (Number.isInteger(Number(v)) && Number(v) > 0 ? Number(v) : undefined);
 
 finishBacklog({
-  provider: typeof flags.provider === 'string' ? flags.provider : 'agy',
+  provider: typeof flags.provider === 'string' ? flags.provider : 'openai',
   model: typeof flags.model === 'string' ? flags.model : undefined,
   concurrency: toInt(flags.concurrency) || 1,
   batchSize: toInt(flags.batch) || 20,

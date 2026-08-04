@@ -3,12 +3,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { createCavotiTerraProvider } from './providers/cavoti-terra.js';
-import { createAnthropicProvider } from './providers/anthropic-sonnet.js';
-import { createAgyProvider } from './providers/agy-gemini.js';
+import { createOpenAiProvider } from './providers/openai-chat.js';
 import { enrichNewsFile, retryFailedEnrichment } from './enrich-news.js';
 
 // Load .env from the repo root and let it OVERRIDE ambient vars, so the file the
-// user configured is authoritative (ambient ANTHROPIC_* would otherwise shadow it).
+// user configured is authoritative (ambient OPENAI_* would otherwise shadow it).
 (function loadDotEnv() {
   const envPath = path.resolve(process.cwd(), '.env');
   let text;
@@ -32,13 +31,10 @@ import { enrichNewsFile, retryFailedEnrichment } from './enrich-news.js';
 })();
 
 function createProvider(name, flags) {
-  if (name === 'anthropic' || name === 'sonnet') {
-    return createAnthropicProvider({ model: flags.model || process.env.ANTHROPIC_MODEL || 'sonnet-5' });
+  if (name === 'cavoti' || name === 'terra' || name === 'luna') {
+    return createCavotiTerraProvider({ model: flags.model || 'gpt-5.6-terra' });
   }
-  if (name === 'agy' || name === 'gemini') {
-    return createAgyProvider(flags.model ? { model: flags.model } : {});
-  }
-  return createCavotiTerraProvider({ model: flags.model || 'gpt-5.6-terra' });
+  return createOpenAiProvider(flags.model ? { model: flags.model } : {});
 }
 // NOTE: src/core/enrich-provider.js is the shared twin of this factory (used by
 // the fetch->enrich->render orchestrator). Keep the two in sync when adding a
@@ -88,7 +84,7 @@ function reportPacket({ outputPath, packet, retried }) {
 }
 
 if (flags.retry) {
-  const provider = createProvider(flags.provider || 'cavoti', flags);
+  const provider = createProvider(flags.provider || 'openai', flags);
   retryFailedEnrichment({
     provider,
     outputDirectory: flags.output ? path.resolve(flags.output) : undefined,
@@ -99,11 +95,11 @@ if (flags.retry) {
     process.exitCode = 1;
   });
 } else if (!inputPath) {
-  console.error('Usage: enrich-cli.js <crawler-output.json> [--provider anthropic|cavoti] [--model id] [--output directory] [--limit number] [--concurrency number]');
-  console.error('       enrich-cli.js --retry [--provider anthropic|cavoti] [--limit number]   # re-run articles whose enrich stage last failed');
+  console.error('Usage: enrich-cli.js <crawler-output.json> [--provider openai|cavoti] [--model id] [--output directory] [--limit number] [--concurrency number]');
+  console.error('       enrich-cli.js --retry [--provider openai|cavoti] [--limit number]   # re-run articles whose enrich stage last failed');
   process.exitCode = 1;
 } else {
-  const provider = createProvider(flags.provider || 'cavoti', flags);
+  const provider = createProvider(flags.provider || 'openai', flags);
   enrichNewsFile(path.resolve(inputPath), {
     provider,
     outputDirectory: flags.output ? path.resolve(flags.output) : undefined,

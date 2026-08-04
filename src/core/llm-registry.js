@@ -32,7 +32,7 @@ export function invalidate(task) {
  * the caller's legacy chain rather than taking the pipeline down.
  *
  * @param {'distill'|'tag'|'enrich'} task
- * @returns {Promise<Array<{name,apiStyle,baseUrl,token,model}>>}
+ * @returns {Promise<Array<{name,baseUrl,token,model}>>}
  */
 export async function chainFor(task) {
   if (!isDbEnabled()) return [];
@@ -50,31 +50,17 @@ export async function chainFor(task) {
 }
 
 /**
- * Build the endpoint URL, headers, and body for one provider entry, so
- * anthropic-style and openai-style endpoints can be called through one code
- * path. `maxTokens` must be generous enough to cover reasoning blocks that some
- * models emit before the answer (see distill.js: 128 starved the gist).
+ * Build the endpoint URL, headers, and body for one provider entry. Every
+ * endpoint speaks the OpenAI chat-completions standard — one shape, no
+ * per-provider branching. `maxTokens` must be generous enough to cover
+ * reasoning blocks that some models emit before the answer (see distill.js:
+ * 128 starved the gist).
  */
 export function buildRequest(provider, prompt, { maxTokens = 512 } = {}) {
-  if (provider.apiStyle === 'openai') {
-    return {
-      url: `${provider.baseUrl}/v1/chat/completions`,
-      headers: {
-        authorization: `Bearer ${provider.token}`,
-        'content-type': 'application/json'
-      },
-      body: {
-        model: provider.model,
-        max_tokens: maxTokens,
-        messages: [{ role: 'user', content: prompt }]
-      }
-    };
-  }
   return {
-    url: `${provider.baseUrl}/v1/messages`,
+    url: `${provider.baseUrl}/v1/chat/completions`,
     headers: {
-      'x-api-key': provider.token,
-      'anthropic-version': '2023-06-01',
+      authorization: `Bearer ${provider.token}`,
       'content-type': 'application/json'
     },
     body: {
@@ -86,16 +72,11 @@ export function buildRequest(provider, prompt, { maxTokens = 512 } = {}) {
 }
 
 /**
- * Pull the assistant's plain text out of either response shape, discarding
- * reasoning/thinking blocks (MiMo emits `thinking`, StepFun and friends emit
- * `reasoning_content`) so callers only ever see the answer.
+ * Pull the assistant's plain text out of a chat-completions response. Reasoning
+ * models (StepFun and friends) put their thinking in a sibling
+ * `reasoning_content` field, which is ignored here so callers only ever see the
+ * answer.
  */
-export function extractText(payload, apiStyle) {
-  if (apiStyle === 'openai') {
-    return String(payload?.choices?.[0]?.message?.content || '');
-  }
-  return (payload?.content || [])
-    .filter((block) => block.type === 'text')
-    .map((block) => block.text || '')
-    .join('\n');
+export function extractText(payload) {
+  return String(payload?.choices?.[0]?.message?.content || '');
 }

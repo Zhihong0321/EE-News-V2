@@ -25,7 +25,7 @@ import { runSite } from './runner.js';
  * @param {number} [opts.articleLimit]     crawl cap
  * @param {boolean} [opts.enrich=true]     run the enrichment stage
  * @param {boolean} [opts.render=true]     run the render stage (requires enrich)
- * @param {string} [opts.provider='agy']   enrichment provider name
+ * @param {string} [opts.provider='openai'] enrichment provider name
  * @param {string} [opts.model]            enrichment model override
  * @param {number} [opts.enrichLimit]      cap articles enriched (undefined = all)
  * @param {number} [opts.concurrency=1]    enrichment concurrency
@@ -39,7 +39,7 @@ export async function runPipeline(adapter, opts = {}) {
     articleLimit,
     enrich = true,
     render = true,
-    provider = 'agy',
+    provider = 'openai',
     model,
     enrichLimit,
     concurrency = 1

@@ -534,8 +534,7 @@ function renderLlmProviders() {
               <input name="name" value="${escapeHtml(provider.name)}" required /></div>
             <div class="llm-field"><label>API style</label>
               <select name="apiStyle">
-                <option value="anthropic"${provider.apiStyle === 'anthropic' ? ' selected' : ''}>anthropic — /v1/messages</option>
-                <option value="openai"${provider.apiStyle === 'openai' ? ' selected' : ''}>openai — /v1/chat/completions</option>
+                <option value="openai" selected>openai — /v1/chat/completions</option>
               </select></div>
             <div class="llm-field llm-field-wide"><label>Base URL</label>
               <input name="baseUrl" value="${escapeHtml(provider.baseUrl)}" required /></div>
@@ -578,14 +577,10 @@ function renderLlmRoutes() {
       const opts = ['<option value="">— none —</option>']
         .concat(options.map((option) =>
           `<option value="${option.id}"${option.id === selected ? ' selected' : ''}>${escapeHtml(option.text)}</option>`));
-      // Enrichment streams SSE against the Anthropic messages shape, so an
-      // openai-style entry there is skipped at runtime. Say so up front.
-      const chosen = options.find((option) => option.id === selected);
-      const warn = task === 'enrich' && chosen && chosen.apiStyle !== 'anthropic'
-        ? '<span class="llm-warn" title="Enrichment requires an Anthropic-style endpoint; this entry is skipped at runtime.">unsupported for enrich</span>'
-        : '';
+      // Every task now speaks the same OpenAI chat-completions standard, so any
+      // routed model is usable everywhere — no per-task compatibility warning.
       return `<div class="llm-route-row"><span class="llm-route-index">${index + 1}</span>
-        <select data-llm-route="${task}" data-index="${index}">${opts.join('')}</select>${warn}</div>`;
+        <select data-llm-route="${task}" data-index="${index}">${opts.join('')}</select></div>`;
     }).join('');
     return `<div class="llm-route-task"><h4>${escapeHtml(task)}</h4>${rows}
       <button type="button" class="run-button" data-llm-save-route="${task}">Save ${escapeHtml(task)} chain</button></div>`;
